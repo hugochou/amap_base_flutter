@@ -25,10 +25,10 @@
 //endregion
 
 //region 导航
-@protocol NaviMethodHandler <NSObject>
-@required
-- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result;
-@end
+//@protocol NaviMethodHandler <NSObject>
+//@required
+//- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result;
+//@end
 //endregion
 
 //region 定位

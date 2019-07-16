@@ -114,8 +114,8 @@
     [description appendFormat:@", self.draggable=%d", self.draggable];
     [description appendFormat:@", self.infoWindowEnable=%d", self.infoWindowEnable];
     [description appendFormat:@", self.position=%@", self.position];
-    [description appendFormat:@", self.infoWindowOffsetX=%i", self.infoWindowOffsetX];
-    [description appendFormat:@", self.infoWindowOffsetY=%i", self.infoWindowOffsetY];
+    [description appendFormat:@", self.infoWindowOffsetX=%@", @(self.infoWindowOffsetX)];
+    [description appendFormat:@", self.infoWindowOffsetY=%@", @(self.infoWindowOffsetY)];
     [description appendFormat:@", self.snippet=%p", self.snippet];
     [description appendFormat:@", self.title=%p", self.title];
     [description appendFormat:@", self.zIndex=%f", self.zIndex];
@@ -127,6 +127,8 @@
     [description appendFormat:@", self.selected=%d", self.selected];
     [description appendFormat:@", self.leftCalloutAccessoryView=%@", self.leftCalloutAccessoryView];
     [description appendFormat:@", self.rightCalloutAccessoryView=%@", self.rightCalloutAccessoryView];
+    [description appendFormat:@", self.ID=%@", self.ID];
+    [description appendFormat:@", self.object=%@", self.object];
     [description appendString:@">"];
     return description;
 }

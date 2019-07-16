@@ -21,6 +21,12 @@
 @interface GetCenterPoint : NSObject <MapMethodHandler>
 @end
 
+@interface ConvertToPoint : NSObject <MapMethodHandler>
+@end
+
+@interface ConvertToCoordinate : NSObject <MapMethodHandler>
+@end
+
 @interface CalcDistance : NSObject <MapMethodHandler>
 @end
 
@@ -57,6 +63,10 @@
 
 
 @interface AddMarkers : NSObject<MapMethodHandler>
+@end
+
+
+@interface RemoveMarkers : NSObject<MapMethodHandler>
 @end
 
 

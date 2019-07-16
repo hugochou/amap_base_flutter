@@ -2,6 +2,7 @@ package me.yohom.amapbase.map
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Point
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
@@ -188,7 +189,7 @@ object OpenOfflineManager : MapMethodHandler {
         return this
     }
 
-    override fun onMethodCall(p0: MethodCall?, p1: MethodChannel.Result?) {
+    override fun onMethodCall(p0: MethodCall, p1: MethodChannel.Result) {
         AMapBasePlugin.registrar.activity().startActivity(
                 Intent(AMapBasePlugin.registrar.activity(),
                         OfflineMapActivity::class.java)
@@ -310,9 +311,12 @@ object AddMarker : MapMethodHandler {
 
         log("方法marker#addMarker android端参数: optionsJson -> $optionsJson")
 
-        optionsJson.parseFieldJson<UnifiedMarkerOptions>().applyTo(map)
+        val markerOptions = optionsJson.parseFieldJson<UnifiedMarkerOptions>()
 
-        result.success(success)
+        val marker = map.addMarker(markerOptions.toMarkerOption())
+        marker.`object` = markerOptions.`object`
+
+        result.success(marker.id)
     }
 }
 
@@ -326,15 +330,41 @@ object AddMarkers : MapMethodHandler {
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        val moveToCenter = call.argument<Boolean>("moveToCenter") ?: true
+        val moveToCenter = call.argument<Boolean>("moveToCenter") ?: false
         val optionsListJson = call.argument<String>("markerOptionsList") ?: "[]"
         val clear = call.argument<Boolean>("clear") ?: false
 
         log("方法marker#addMarkers android端参数: optionsListJson -> $optionsListJson")
 
-        val optionsList = ArrayList(optionsListJson.parseFieldJson<List<UnifiedMarkerOptions>>().map { it.toMarkerOption() })
+        val unifiedMarkerOptions = optionsListJson.parseFieldJson<List<UnifiedMarkerOptions>>()
+
+        val optionsList = ArrayList(unifiedMarkerOptions.map { it.toMarkerOption() })
+
         if (clear) map.mapScreenMarkers.forEach { it.remove() }
-        map.addMarkers(optionsList, moveToCenter)
+
+        val markers = map.addMarkers(optionsList, moveToCenter)
+
+        markers.forEachIndexed {index, marker -> marker.`object` = unifiedMarkerOptions[index].`object` }
+
+        result.success(markers.map { it.id })
+    }
+}
+
+object RemoveMarkers : MapMethodHandler {
+
+    private lateinit var map: AMap
+
+    override fun with(map: AMap): RemoveMarkers {
+        this.map = map
+        return this
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        val ids = call.argument<List<String>>("ids") ?: listOf()
+
+        log("方法marker#removeMarkers android端参数: ids -> $ids")
+
+        map.mapScreenMarkers.filter { ids.contains(it.id) }.forEach { it.remove() }
 
         result.success(success)
     }
@@ -390,6 +420,52 @@ object ChangeLatLng : MapMethodHandler {
         map.animateCamera(CameraUpdateFactory.changeLatLng(targetJson.parseFieldJson<LatLng>()))
 
         methodResult.success(success)
+    }
+}
+
+object ConvertToPoint : MapMethodHandler {
+
+    lateinit var map: AMap
+
+    override fun with(map: AMap): ConvertToPoint {
+        this.map = map
+        return this
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        val dict = call.argument<Map<String, Any>>("coordinate")
+        val latlng = dict!!.getLntlng()
+        val point = map.projection.toScreenLocation(latlng)
+        result.success(mapOf("x" to point.x, "y" to point.y))
+    }
+
+    private fun Map<String, Any>.getLntlng(): LatLng {
+        val lat = get("latitude") as Double
+        val lng = get("longitude") as Double
+        return LatLng(lat, lng)
+    }
+}
+
+object ConvertToCoordinate : MapMethodHandler {
+
+    lateinit var map: AMap
+
+    override fun with(map: AMap): ConvertToCoordinate {
+        this.map = map
+        return this
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        val dict = call.argument<Map<String, Any>>("point")
+        val point = dict!!.getPoint()
+        val latlng = map.projection.fromScreenLocation(point)
+        result.success(mapOf("latitude" to latlng.latitude, "longitude" to latlng.longitude))
+    }
+
+    private fun Map<String, Any>.getPoint(): Point {
+        val x = get("x") as Number
+        val y = get("y") as Number
+        return Point(x.toInt(), y.toInt())
     }
 }
 

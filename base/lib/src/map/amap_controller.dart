@@ -15,10 +15,18 @@ import 'package:meta/meta.dart';
 class AMapController {
   final MethodChannel _mapChannel;
   final EventChannel _markerClickedEventChannel;
+  final EventChannel _markerDeselectEventChannel;
+  final EventChannel _cameraChangeEventChannel;
+  final EventChannel _cameraChangeFinishedEventChannel;
 
   AMapController.withId(int id)
       : _mapChannel = MethodChannel('me.yohom/map$id'),
-        _markerClickedEventChannel = EventChannel('me.yohom/marker_clicked$id');
+        _markerClickedEventChannel = EventChannel('me.yohom/marker_clicked$id'),
+        _markerDeselectEventChannel =
+            EventChannel('me.yohom/marker_deselect$id'),
+        _cameraChangeEventChannel = EventChannel('me.yohom/camera_change$id'),
+        _cameraChangeFinishedEventChannel =
+            EventChannel('me.yohom/camera_change_finished$id');
 
   void dispose() {}
 
@@ -44,19 +52,21 @@ class AMapController {
     );
   }
 
-  Future addMarker(MarkerOptions options) {
+  /// 添加单个个Marker 返回marker的id
+  Future<String> addMarker(MarkerOptions options) {
     final _optionsJson = options.toJsonString();
     L.p('方法addMarker dart端参数: _optionsJson -> $_optionsJson');
     return _mapChannel.invokeMethod(
       'marker#addMarker',
       {'markerOptions': _optionsJson},
-    );
+    ).then((data) => data as String);
   }
 
-  Future addMarkers(
+  /// 添加多个Marker 返回添加的marker的id
+  Future<List<String>> addMarkers(
     List<MarkerOptions> optionsList, {
-    bool moveToCenter = true,
-    bool clear = true,
+    bool moveToCenter = false,
+    bool clear = false,
   }) {
     final _optionsListJson =
         jsonEncode(optionsList.map((it) => it.toJson()).toList());
@@ -68,7 +78,12 @@ class AMapController {
         'markerOptionsList': _optionsListJson,
         'clear': clear,
       },
-    );
+    ).then((data) => (data as List).cast<String>());
+  }
+
+  Future removeMarkers(List<String> ids) {
+    L.p('方法removeMarkers dart端参数: ids -> $ids');
+    return _mapChannel.invokeMethod('marker#removeMarkers', {'ids': ids});
   }
 
   Future showIndoorMap(bool enable) {
@@ -206,6 +221,30 @@ class AMapController {
     return LatLng.fromJson(json.decode(result));
   }
 
+  /// 经纬度坐标转屏幕坐标
+  Future<Offset> convertToPoint(LatLng latLng) async {
+    Map<String, dynamic> params = {
+      "coordinate": latLng.toJson(),
+    };
+
+    Map<dynamic, dynamic> pointDict =
+        await _mapChannel.invokeMethod("map#convertToPoint", params);
+    Offset point = Offset(pointDict['x'], pointDict['y']);
+    return point;
+  }
+
+  /// 屏幕坐标转经纬度坐标
+  Future<LatLng> convertToCoordinate(Offset point) async {
+    Map<String, dynamic> params = {
+      "point": {'x': point.dx, 'y': point.dy},
+    };
+
+    final coorDict =
+        await _mapChannel.invokeMethod("map#convertToCoordinate", params);
+    final latlng = LatLng(coorDict['latitude'], coorDict['longitude']);
+    return latlng;
+  }
+
   /// 截图
   ///
   /// 可能会抛出 [PlatformException]
@@ -257,10 +296,35 @@ class AMapController {
     );
   }
 
+  /// 设置固定在屏幕中心的marker id（marker id 在addMarker时返回）
+  Future setCenterMarkerId(String markerId) {
+    L.p('setCenterMarkerId dart端参数: markerId -> $markerId');
+    return _mapChannel.invokeMethod(
+      'map#setCenterMarkerId',
+      {'markerId': markerId},
+    );
+  }
+
   //endregion
 
   /// marker点击事件流
   Stream<MarkerOptions> get markerClickedEvent => _markerClickedEventChannel
       .receiveBroadcastStream()
       .map((data) => MarkerOptions.fromJson(jsonDecode(data)));
+
+  /// 点击marker以外事件流
+  Stream<MarkerOptions> get markerDeselectEvent => _markerDeselectEventChannel
+      .receiveBroadcastStream()
+      .map((data) => MarkerOptions.fromJson(jsonDecode(data)));
+
+  /// 改变地图可视范围事件流
+  Stream<LatLng> get cameraChangeEvent => _cameraChangeEventChannel
+      .receiveBroadcastStream()
+      .map((data) => LatLng.fromJson(json.decode(data)));
+
+  /// 改变地图可视范围结束事件流
+  Stream<LatLng> get cameraChangeFinishedEvent =>
+      _cameraChangeFinishedEventChannel
+          .receiveBroadcastStream()
+          .map((data) => LatLng.fromJson(json.decode(data)));
 }

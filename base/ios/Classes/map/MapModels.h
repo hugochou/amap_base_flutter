@@ -126,6 +126,10 @@
 @property(nonatomic) NSString *leftCalloutAccessoryView;
 /// 显示在默认弹出框右侧的view [暂未实现]
 @property(nonatomic) NSString *rightCalloutAccessoryView;
+/// add marker时产生，操作marker时使用
+@property(nonatomic) NSString *ID;
+/// 自定义属性
+@property(nonatomic) id object;
 
 - (NSString *)description;
 

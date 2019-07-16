@@ -7,7 +7,7 @@
 #import "LocationHandlers.h"
 #import "SearchHandlers.h"
 #import "MapHandlers.h"
-#import "NaviHandlers.h"
+//#import "NaviHandlers.h"
 
 static NSDictionary<NSString *, NSObject <MapMethodHandler> *> *_mapDictionary;
 
@@ -22,6 +22,7 @@ static NSDictionary<NSString *, NSObject <MapMethodHandler> *> *_mapDictionary;
                 @"map#setUiSettings": [SetUiSettings alloc],
                 @"marker#addMarker": [AddMarker alloc],
                 @"marker#addMarkers": [AddMarkers alloc],
+                @"marker#removeMarkers":[RemoveMarkers alloc],
                 @"map#showIndoorMap": [ShowIndoorMap alloc],
                 @"map#setMapType": [SetMapType alloc],
                 @"map#setLanguage": [SetLanguage alloc],
@@ -41,6 +42,8 @@ static NSDictionary<NSString *, NSObject <MapMethodHandler> *> *_mapDictionary;
                 
                 @"tool#calcDistance":[CalcDistance alloc],
                 @"map#getCenterPoint":[GetCenterPoint alloc],
+                @"map#convertToPoint":[ConvertToPoint alloc],
+                @"map#convertToCoordinate":[ConvertToCoordinate alloc],
         };
     }
     return _mapDictionary;
@@ -74,21 +77,21 @@ static NSDictionary<NSString *, NSObject <SearchMethodHandler> *> *_searchDictio
 
 @end
 
-static NSDictionary<NSString *, NSObject <NaviMethodHandler> *> *_naviDictionary;
-
-@implementation NaviFunctionRegistry {
-
-}
-+ (NSDictionary<NSString *, NSObject <NaviMethodHandler> *> *)naviMethodHandler {
-    if (!_naviDictionary) {
-        _naviDictionary = @{
-                @"navi#startNavi": [StartNavi alloc],
-        };
-    }
-    return _naviDictionary;
-}
-
-@end
+//static NSDictionary<NSString *, NSObject <NaviMethodHandler> *> *_naviDictionary;
+//
+//@implementation NaviFunctionRegistry {
+//
+//}
+//+ (NSDictionary<NSString *, NSObject <NaviMethodHandler> *> *)naviMethodHandler {
+//    if (!_naviDictionary) {
+//        _naviDictionary = @{
+//                @"navi#startNavi": [StartNavi alloc],
+//        };
+//    }
+//    return _naviDictionary;
+//}
+//
+//@end
 
 static NSDictionary<NSString *, NSObject <LocationMethodHandler> *> *_locationDictionary;
 

@@ -11,7 +11,6 @@
 #import "MJExtension.h"
 #import "UnifiedAssets.h"
 
-
 @implementation SetCustomMapStyleID {
     MAMapView *_mapView;
 }
@@ -162,6 +161,54 @@
     result([latlng mj_JSONString]);
 }
 
+@end
+
+@implementation ConvertToPoint{
+    MAMapView *_mapView;
+}
+
+- (NSObject<MapMethodHandler> *)initWith:(MAMapView *)mapView {
+    _mapView = mapView;
+    return self;
+}
+
+- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
+    NSDictionary *params = [call arguments];
+    NSDictionary *dict = [params valueForKey:@"coordinate"];
+    CLLocationCoordinate2D coordinate = [self getCoordinateFromDict:dict];
+    CGPoint point = [_mapView convertCoordinate:coordinate toPointToView:_mapView];
+    result(@{@"x": @(point.x), @"y": @(point.y)});
+}
+
+-(CLLocationCoordinate2D) getCoordinateFromDict:(NSDictionary *) dict {
+    CGFloat lat = [[dict valueForKey:@"latitude"] floatValue];
+    CGFloat lng = [[dict valueForKey:@"longitude"] floatValue];
+    return CLLocationCoordinate2DMake(lat,lng);
+}
+@end
+
+@implementation ConvertToCoordinate{
+    MAMapView *_mapView;
+}
+
+- (NSObject<MapMethodHandler> *)initWith:(MAMapView *)mapView {
+    _mapView = mapView;
+    return self;
+}
+
+- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
+    NSDictionary *params = [call arguments];
+    NSDictionary *dict = [params valueForKey:@"point"];
+    CGPoint point = [self getPointFromDict:dict];
+    CLLocationCoordinate2D coordinate = [_mapView convertPoint:point toCoordinateFromView:_mapView];
+    result(@{@"latitude": @(coordinate.latitude), @"longitude": @(coordinate.longitude)});
+}
+
+-(CGPoint) getPointFromDict:(NSDictionary *) dict {
+    CGFloat x = [[dict valueForKey:@"x"] floatValue];
+    CGFloat y = [[dict valueForKey:@"y"] floatValue];
+    return CGPointMake(x, y);
+}
 @end
 
 @implementation ClearMap {
@@ -341,11 +388,12 @@
     annotation.coordinate = [markerOptions.position toCLLocationCoordinate2D];
     annotation.title = markerOptions.title;
     annotation.subtitle = markerOptions.snippet;
+    markerOptions.ID = [[NSUUID UUID] UUIDString];
     annotation.markerOptions = markerOptions;
 
     [_mapView addAnnotation:annotation];
 
-    result(success);
+    result(markerOptions.ID);
 }
 
 @end
@@ -361,9 +409,9 @@
 - (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
     NSDictionary *paramDic = call.arguments;
 
-    NSString *moveToCenter = (NSString *) paramDic[@"moveToCenter"];
+    BOOL moveToCenter = [([paramDic objectForKey:@"moveToCenter"] ? : @NO)  boolValue];
     NSString *optionsListJson = (NSString *) paramDic[@"markerOptionsList"];
-    BOOL clear = (BOOL) paramDic[@"clear"];
+    BOOL clear = [([paramDic objectForKey:@"clear"] ? : @NO) boolValue];
 
     NSLog(@"方法marker#addMarkers ios端参数: optionsListJson -> %@", optionsListJson);
     if (clear) [_mapView removeAnnotations:_mapView.annotations];
@@ -372,6 +420,7 @@
                                                               options:kNilOptions
                                                                 error:nil];
     NSMutableArray<MarkerAnnotation *> *optionList = [NSMutableArray array];
+    NSMutableArray<NSString *> *idList = [NSMutableArray array];
 
     for (NSUInteger i = 0; i < rawOptionsList.count; ++i) {
         UnifiedMarkerOptions *options = [UnifiedMarkerOptions mj_objectWithKeyValues:rawOptionsList[i]];
@@ -379,9 +428,11 @@
         annotation.coordinate = [options.position toCLLocationCoordinate2D];
         annotation.title = options.title;
         annotation.subtitle = options.snippet;
+        options.ID = [[NSUUID UUID] UUIDString];
         annotation.markerOptions = options;
 
         [optionList addObject:annotation];
+        [idList addObject:options.ID];
     }
 
     [_mapView addAnnotations:optionList];
@@ -389,9 +440,32 @@
         [_mapView showAnnotations:optionList animated:YES];
     }
 
-    result(success);
+    result(idList);
 }
 
+@end
+
+@implementation RemoveMarkers {
+    MAMapView *_mapView;
+}
+    
+- (NSObject<MapMethodHandler> *)initWith:(MAMapView *)mapView {
+    _mapView = mapView;
+    return self;
+}
+    
+- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
+    NSDictionary *params = [call arguments];
+    NSArray *ids = [params valueForKey:@"ids"];
+    
+    NSLog(@"%@", ids);
+    NSIndexSet *indexSet = [_mapView.annotations indexesOfObjectsPassingTest:^BOOL(MarkerAnnotation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSLog(@"===%@", obj.markerOptions.ID);
+        return [ids containsObject:obj.markerOptions.ID];
+    }];
+    [_mapView removeAnnotations:[_mapView.annotations objectsAtIndexes:indexSet]];
+    result(nil);
+}
 @end
 
 @implementation AddPolyline {

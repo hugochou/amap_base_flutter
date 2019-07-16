@@ -1,5 +1,5 @@
 name: amap_base
-description: Fully Functional AMap Flutter Plugin. Based on AndroidView/UiKitView.
+description: 基于amap_base，自定义地图标注点及点击效果；添加地图点击事件、更改地图可视范围事件的监听接口
 version: 0.4.0
 author: yohom <382146139@qq.com>
 homepage: https://github.com/yohom/amap_base_flutter

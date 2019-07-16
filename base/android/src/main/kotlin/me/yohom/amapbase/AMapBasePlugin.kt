@@ -95,11 +95,11 @@ class AMapBasePlugin {
                     }
 
             // 导航 channel
-            MethodChannel(registrar.messenger(), "me.yohom/navi")
-                    .setMethodCallHandler { call, result ->
-                        NAVI_METHOD_HANDLER[call.method]
-                                ?.onMethodCall(call, result) ?: result.notImplemented()
-                    }
+//            MethodChannel(registrar.messenger(), "me.yohom/navi")
+//                    .setMethodCallHandler { call, result ->
+//                        NAVI_METHOD_HANDLER[call.method]
+//                                ?.onMethodCall(call, result) ?: result.notImplemented()
+//                    }
 
             // 定位 channel
             MethodChannel(registrar.messenger(), "me.yohom/location")

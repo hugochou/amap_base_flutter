@@ -4,7 +4,7 @@ import me.yohom.amapbase.location.Init
 import me.yohom.amapbase.location.StartLocate
 import me.yohom.amapbase.location.StopLocate
 import me.yohom.amapbase.map.*
-import me.yohom.amapbase.navi.handler.StartNavi
+//import me.yohom.amapbase.navi.handler.StartNavi
 import me.yohom.amapbase.search.*
 
 /**
@@ -15,6 +15,7 @@ val MAP_METHOD_HANDLER: Map<String, MapMethodHandler> = mapOf(
         "map#setUiSettings" to SetUiSettings,
         "marker#addMarker" to AddMarker,
         "marker#addMarkers" to AddMarkers,
+        "marker#removeMarkers" to RemoveMarkers,
         "marker#clear" to ClearMarker,
         "map#showIndoorMap" to ShowIndoorMap,
         "map#setMapType" to SetMapType,
@@ -33,7 +34,9 @@ val MAP_METHOD_HANDLER: Map<String, MapMethodHandler> = mapOf(
         "map#setMapCustomEnable" to SetMapCustomEnable,
         "map#setCustomMapStyleID" to SetCustomMapStyleID,
         "map#getCenterPoint" to GetCenterLnglat,
-        "map#changeLatLng" to ChangeLatLng
+        "map#changeLatLng" to ChangeLatLng,
+        "map#convertToPoint" to ConvertToPoint,
+        "map#convertToCoordinate" to ConvertToCoordinate
 )
 
 /**
@@ -56,9 +59,9 @@ val SEARCH_METHOD_HANDLER: Map<String, SearchMethodHandler> = mapOf(
 /**
  * 导航功能集合
  */
-val NAVI_METHOD_HANDLER: Map<String, NaviMethodHandler> = mapOf(
-        "navi#startNavi" to StartNavi
-)
+//val NAVI_METHOD_HANDLER: Map<String, NaviMethodHandler> = mapOf(
+//        "navi#startNavi" to StartNavi
+//)
 
 /**
  * 定位功能集合

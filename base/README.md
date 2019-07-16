@@ -1,4 +1,21 @@
+# 1. 基于base修改
+# 2. 删除高德导航库及相关引用：
+#    - 删除 ios/amap_base.podspec、android/build.gradle 中对导航的依赖
+#    - 删除 ios/Classes/navi目录
+#    - 删除 android/src/main/kotlin/me/yohom/amapbase/navi/目录
+#    - 注释 AMapBasePlugin.kt/FunctionRegistry.kt/MethodCallHandler.kt中与导航相关的代码
+#    - 注释 AMapBasePlugin.m/FunctionRegistry.h/FunctionRegistry.m/MapMethodHandler 中与导航相关的代码
+# 3. 自定义地图标注点：MamAnnotationView（iOS）/ Android通过合成图片实现
+#    - MarkerOptions 添加type属性（iOS下直接使用type属性，
+#      Android下MarkerOptions为final class 不能被继承，所以做了特殊处理）
+# 4. 自定义infoWindow（Android）实现标注点点击后的显示效果
+#    - res/layout/custom_info_view.xml
+#    - res/drawable/background.xml
+#    - res/values/attrs.xml
+# 5. 增加markerDeselectEvent、cameraChangeEvent、cameraChangeFinishedEvent事件监听
+
 # 高德地图Flutter插件 基于AndroidView和UiKitView
+
 
 |      amap_base     | [![pub package](https://img.shields.io/pub/v/amap_base.svg)](https://pub.Flutter-io.cn/packages/amap_base)                   |
 |:------------------:|:----------------------------------------------------------------------------------------------------------------------------:|

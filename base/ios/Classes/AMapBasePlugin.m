@@ -74,17 +74,17 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
     }];
 
     // 导航 channel
-    FlutterMethodChannel *naviChannel = [FlutterMethodChannel
-            methodChannelWithName:@"me.yohom/navi"
-                  binaryMessenger:[registrar messenger]];
-    [naviChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
-        NSObject <NaviMethodHandler> *handler = [NaviFunctionRegistry naviMethodHandler][call.method];
-        if (handler) {
-            [[handler init] onMethodCall:call :result];
-        } else {
-            result(FlutterMethodNotImplemented);
-        }
-    }];
+//    FlutterMethodChannel *naviChannel = [FlutterMethodChannel
+//            methodChannelWithName:@"me.yohom/navi"
+//                  binaryMessenger:[registrar messenger]];
+//    [naviChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
+//        NSObject <NaviMethodHandler> *handler = [NaviFunctionRegistry naviMethodHandler][call.method];
+//        if (handler) {
+//            [[handler init] onMethodCall:call :result];
+//        } else {
+//            result(FlutterMethodNotImplemented);
+//        }
+//    }];
 
     // 定位 channel
     FlutterMethodChannel *locationChannel = [FlutterMethodChannel

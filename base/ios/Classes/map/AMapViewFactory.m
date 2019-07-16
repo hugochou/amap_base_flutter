@@ -11,9 +11,13 @@
 #import "NSString+Color.h"
 #import "FunctionRegistry.h"
 #import "MapHandlers.h"
+#import "MamAnnotationView.h"
 
 static NSString *mapChannelName = @"me.yohom/map";
 static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
+static NSString *markerDeselectChannelName = @"me.yohom/marker_deselect";
+static NSString *cameraChangeChannelName = @"me.yohom/camera_change";
+static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finished";
 
 @interface MarkerEventHandler : NSObject <FlutterStreamHandler>
 @property(nonatomic) FlutterEventSink sink;
@@ -59,8 +63,15 @@ static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
   UnifiedAMapOptions *_options;
   FlutterMethodChannel *_methodChannel;
   FlutterEventChannel *_markerClickedEventChannel;
+  FlutterEventChannel *_markerDeselectEventChannel;
+  FlutterEventChannel *_cameraChangeEventChannel;
+  FlutterEventChannel *_cameraChangeFinishEventChannel;
   MAMapView *_mapView;
   MarkerEventHandler *_eventHandler;
+  MarkerEventHandler *_markerDeselectHandler;
+  MarkerEventHandler *_cameraChangeHandler;
+  MarkerEventHandler *_cameraChangeFinishHandler;
+  MarkerAnnotation *_centerAnnotation;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -114,30 +125,74 @@ static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
                                                binaryMessenger:[AMapBasePlugin registrar].messenger];
   __weak __typeof__(self) weakSelf = self;
   [_methodChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
-    NSObject <MapMethodHandler> *handler = [MapFunctionRegistry mapMethodHandler][call.method];
-    if (handler) {
-      __typeof__(self) strongSelf = weakSelf;
-      [[handler initWith:strongSelf->_mapView] onMethodCall:call :result];
+    __typeof__(self) strongSelf = weakSelf;
+    if ([call.method isEqualToString:@"map#setCenterMarkerId"]) {
+      NSDictionary *paramDic = call.arguments;
+      NSString *markerId = (NSString *) paramDic[@"markerId"];
+        NSUInteger index = [strongSelf->_mapView.annotations indexOfObjectPassingTest:^BOOL(MarkerAnnotation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            return [obj.markerOptions.ID isEqualToString:markerId];
+        }];
+      if (index != NSNotFound) {
+        strongSelf->_centerAnnotation = [strongSelf->_mapView.annotations objectAtIndex:index];
+      } else {
+        strongSelf->_centerAnnotation = nil;
+      }
     } else {
-      result(FlutterMethodNotImplemented);
+      NSObject <MapMethodHandler> *handler = [MapFunctionRegistry mapMethodHandler][call.method];
+      if (handler) {
+        [[handler initWith:strongSelf->_mapView] onMethodCall:call :result];
+      } else {
+        result(FlutterMethodNotImplemented);
+      }
     }
   }];
   _mapView.delegate = weakSelf;
 
   _eventHandler = [[MarkerEventHandler alloc] init];
-  _markerClickedEventChannel = [FlutterEventChannel eventChannelWithName:[NSString stringWithFormat:@"%@%lld", markerClickedChannelName, _viewId]
-                                                         binaryMessenger:[AMapBasePlugin registrar].messenger];
+  _markerClickedEventChannel = [FlutterEventChannel eventChannelWithName:[NSString stringWithFormat:@"%@%lld", markerClickedChannelName, _viewId] binaryMessenger:[AMapBasePlugin registrar].messenger];
   [_markerClickedEventChannel setStreamHandler:_eventHandler];
+    
+  // 取消选中标注事件注册(add by Chris)
+  _markerDeselectHandler = [[MarkerEventHandler alloc] init];
+  _markerDeselectEventChannel = [FlutterEventChannel eventChannelWithName:[NSString stringWithFormat:@"%@%lld", markerDeselectChannelName, _viewId] binaryMessenger:[AMapBasePlugin registrar].messenger];
+  [_markerDeselectEventChannel setStreamHandler:_markerDeselectHandler];
+
+  // 改变地图可视范围事件注册(add by Chris)
+  _cameraChangeHandler = [[MarkerEventHandler alloc] init];
+  _cameraChangeEventChannel = [FlutterEventChannel eventChannelWithName:[NSString stringWithFormat:@"%@%lld", cameraChangeChannelName, _viewId] binaryMessenger:[AMapBasePlugin registrar].messenger];
+  [_cameraChangeEventChannel setStreamHandler:_cameraChangeHandler];
+    
+  // 改变地图可视范围事件注册(add by Chris)
+  _cameraChangeFinishHandler = [[MarkerEventHandler alloc] init];
+  _cameraChangeFinishEventChannel = [FlutterEventChannel eventChannelWithName:[NSString stringWithFormat:@"%@%lld", cameraChangeFinishChannelName, _viewId] binaryMessenger:[AMapBasePlugin registrar].messenger];
+  [_cameraChangeFinishEventChannel setStreamHandler:_cameraChangeFinishHandler];
 }
 
 #pragma MAMapViewDelegate
 
 /// 点击annotation回调
 - (void)mapView:(MAMapView *)mapView didSelectAnnotationView:(MAAnnotationView *)view {
-  if ([view.annotation isKindOfClass:[MarkerAnnotation class]]) {
+    if ([view isKindOfClass:[MamAnnotationView class]]) {
+        MamAnnotationView *annotationView = (MamAnnotationView*)view;
+        [annotationView animateToShowAnnowtationViewDetail];
+    }
+    
+  if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _eventHandler.sink) {
     MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
     _eventHandler.sink([annotation.markerOptions mj_JSONString]);
   }
+}
+
+-(void)mapView:(MAMapView *)mapView didDeselectAnnotationView:(MAAnnotationView *)view {
+    if ([view isKindOfClass:[MamAnnotationView class]]) {
+        MamAnnotationView *annotationView = (MamAnnotationView*)view;
+        [annotationView animateToHideAnnowtationViewDetail];
+    }
+    
+    if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _markerDeselectHandler.sink) {
+        MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
+        _markerDeselectHandler.sink([annotation.markerOptions mj_JSONString]);
+    }
 }
 
 /// 渲染overlay回调
@@ -184,18 +239,32 @@ static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
     if ([annotation isKindOfClass:[MarkerAnnotation class]]) {
       UnifiedMarkerOptions *options = ((MarkerAnnotation *) annotation).markerOptions;
       annotationView.zIndex = (NSInteger) options.zIndex;
-      if (options.icon != nil) {
-        annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.icon]];
-      } else {
-        annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"]];
-      }
-      annotationView.centerOffset = CGPointMake(options.anchorU, options.anchorV);
-      annotationView.calloutOffset = CGPointMake(options.infoWindowOffsetX, options.infoWindowOffsetY);
-      annotationView.draggable = options.draggable;
-      annotationView.canShowCallout = options.infoWindowEnable;
-      annotationView.enabled = options.enabled;
-      annotationView.highlighted = options.highlighted;
-      annotationView.selected = options.selected;
+        if (options.icon == nil && [options.object isKindOfClass:[NSNumber class]] && ([options.object integerValue] == 1 || [options.object integerValue] == 2)){
+            NSString *identity = @"evAnnotationView";
+            MamAnnotationView *customAnnotationView = (MamAnnotationView *)[mapView dequeueReusableAnnotationViewWithIdentifier:identity];
+            if (!customAnnotationView) {
+                customAnnotationView = [[MamAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identity];
+            }
+            UIImage *bgImg = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/mam_pin_bg.png"]];
+            UIImage *icon = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:[NSString stringWithFormat:@"images/mam_pin_in_%@.png", options.object]]];
+            [customAnnotationView setupBackImage:bgImg IconImage:icon DetailText:options.title];
+            [customAnnotationView setExclusiveTouch:YES];
+            return customAnnotationView;
+        }
+        else {
+          if (options.icon != nil) {
+            annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.icon]];
+          } else {
+            annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"]];
+          }
+          annotationView.centerOffset = CGPointMake(options.anchorU, options.anchorV);
+          annotationView.calloutOffset = CGPointMake(options.infoWindowOffsetX, options.infoWindowOffsetY);
+          annotationView.draggable = options.draggable;
+          annotationView.canShowCallout = options.infoWindowEnable;
+          annotationView.enabled = options.enabled;
+          annotationView.highlighted = options.highlighted;
+          annotationView.selected = options.selected;
+        }
     } else {
       if ([[annotation title] isEqualToString:@"起点"]) {
         annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/amap_start.png"]];
@@ -216,4 +285,35 @@ static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
   return nil;
 }
 
+- (void)mapView:(MAMapView *)mapView regionDidChangeAnimated:(BOOL)animated {
+    if (_centerAnnotation) {
+        _centerAnnotation.coordinate = mapView.centerCoordinate;
+    }
+    if (_cameraChangeFinishHandler.sink) {
+        CLLocationCoordinate2D coor = mapView.centerCoordinate;
+        LatLng *latlng = [LatLng new];
+        latlng.latitude = coor.latitude;
+        latlng.longitude = coor.longitude;
+        _cameraChangeFinishHandler.sink([latlng mj_JSONString]);
+    }
+}
+
+- (void)mapView:(MAMapView *)mapView regionWillChangeAnimated:(BOOL)animated {
+    if (mapView.selectedAnnotations.count > 0) {
+        [mapView deselectAnnotation:mapView.selectedAnnotations.lastObject animated:NO];
+    }
+}
+
+- (void)mapViewRegionChanged:(MAMapView *)mapView {
+    if (_centerAnnotation) {
+        _centerAnnotation.coordinate = mapView.centerCoordinate;
+    }
+    if (_cameraChangeHandler.sink) {
+        CLLocationCoordinate2D coor = mapView.centerCoordinate;
+        LatLng *latlng = [LatLng new];
+        latlng.latitude = coor.latitude;
+        latlng.longitude = coor.longitude;
+        _cameraChangeHandler.sink([latlng mj_JSONString]);
+    }
+}
 @end
