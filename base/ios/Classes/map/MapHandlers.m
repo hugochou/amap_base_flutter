@@ -458,9 +458,7 @@
     NSDictionary *params = [call arguments];
     NSArray *ids = [params valueForKey:@"ids"];
     
-    NSLog(@"%@", ids);
     NSIndexSet *indexSet = [_mapView.annotations indexesOfObjectsPassingTest:^BOOL(MarkerAnnotation *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSLog(@"===%@", obj.markerOptions.ID);
         return [ids containsObject:obj.markerOptions.ID];
     }];
     [_mapView removeAnnotations:[_mapView.annotations objectsAtIndexes:indexSet]];
