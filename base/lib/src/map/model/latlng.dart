@@ -16,8 +16,8 @@ class LatLng {
   String toJsonString() => jsonEncode(toJson());
 
   LatLng.fromJson(Map<String, dynamic> json)
-      : latitude = json['latitude'] as double,
-        longitude = json['longitude'] as double;
+      : latitude = (json['latitude'] as num).toDouble(),
+        longitude = (json['longitude'] as num).toDouble();
 
   LatLng copyWith({
     double latitude,
