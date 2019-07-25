@@ -146,8 +146,12 @@ class UnifiedMarkerOptions(
                 if (this@UnifiedMarkerOptions.icon != null) {
                     icon(UnifiedAssets.getBitmapDescriptor(this@UnifiedMarkerOptions.icon))
                 } else {
-                    if (`object` is Number && (`object` == 1.0 || `object` == 2.0)) {
-                        val bmDesc = UnifiedAssets.getMamBitmapDescriptor(`object`.toInt())
+                    var type: Int = 0
+                    if (`object` is Map<*, *> && `object`["type"] != null) {
+                        type = (`object`["type"] as Number).toInt()
+                    }
+                    if (type == 1 || type == 2) {
+                        val bmDesc = UnifiedAssets.getMamBitmapDescriptor(type)
                         setInfoWindowOffset(0, bmDesc.width)
                         icon(bmDesc)
                     } else {

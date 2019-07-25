@@ -92,7 +92,9 @@ class MarkerOptions {
   /// 显示在默认弹出框右侧的view [iOS暂未实现]
   String rightCalloutAccessoryView;
 
-  /// 自定义信息（暂用于区分地图标注点的显示类型：1-充电站； 2-换电站）
+  /// 自定义信息
+  /// object['id']：站点id
+  /// object['type']: 站点类型：1-充电站； 2-换电站
   dynamic object;
 
   MarkerOptions({

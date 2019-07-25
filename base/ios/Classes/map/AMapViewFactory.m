@@ -239,14 +239,16 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
     if ([annotation isKindOfClass:[MarkerAnnotation class]]) {
       UnifiedMarkerOptions *options = ((MarkerAnnotation *) annotation).markerOptions;
       annotationView.zIndex = (NSInteger) options.zIndex;
-        if (options.icon == nil && [options.object isKindOfClass:[NSNumber class]] && ([options.object integerValue] == 1 || [options.object integerValue] == 2)){
+        NSInteger type = 0;
+        if ([options.object isKindOfClass:[NSDictionary class]]) type = [[options.object objectForKey:@"type"] integerValue];
+        if (options.icon == nil && (type == 1 || type == 2)){
             NSString *identity = @"evAnnotationView";
             MamAnnotationView *customAnnotationView = (MamAnnotationView *)[mapView dequeueReusableAnnotationViewWithIdentifier:identity];
             if (!customAnnotationView) {
                 customAnnotationView = [[MamAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:identity];
             }
             UIImage *bgImg = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/mam_pin_bg.png"]];
-            UIImage *icon = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:[NSString stringWithFormat:@"images/mam_pin_in_%@.png", options.object]]];
+            UIImage *icon = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:[NSString stringWithFormat:@"images/mam_pin_in_%@.png", @(type)]]];
             [customAnnotationView setupBackImage:bgImg IconImage:icon DetailText:options.title];
             [customAnnotationView setExclusiveTouch:YES];
             return customAnnotationView;

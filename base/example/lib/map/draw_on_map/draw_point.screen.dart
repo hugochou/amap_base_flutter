@@ -76,7 +76,7 @@ class DrawPointScreenState extends State<DrawPointScreen> with SingleTickerProvi
 //                          icon: 'images/home_map_icon_positioning_nor.png',
                               position: latLng,
                               title: '哈哈',
-                              object: 1,
+                              object: {'id': '123', 'type': 1},
                               infoWindowEnable: Platform.isAndroid,
                             ))
                         .toList(),
@@ -107,7 +107,7 @@ class DrawPointScreenState extends State<DrawPointScreen> with SingleTickerProvi
         onPressed: () async {
           final nextLatLng = _nextLatLng();
           final type = Random().nextInt(2) + 1;
-          await _controller.addMarker(MarkerOptions(position: nextLatLng, object: type, title: '哈哈哈哈哈'));
+          await _controller.addMarker(MarkerOptions(position: nextLatLng, object: {'type':type}, title: '哈哈哈哈哈'));
           await _controller.changeLatLng(nextLatLng);
         },
       ),
