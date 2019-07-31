@@ -16,8 +16,14 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
     FlutterMethodChannel *permissionChannel = [FlutterMethodChannel
             methodChannelWithName:@"me.yohom/permission"
                   binaryMessenger:[registrar messenger]];
+    __weak typeof(self) weakSelf = self;
     [permissionChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
-        result(@YES);
+        if ([@"requestPermission" isEqualToString:call.method]) {
+            result(@([weakSelf locationServiceAvailable]));
+        }
+        else {
+            result(@YES);
+        }
     }];
 
     // 设置key channel
@@ -109,4 +115,18 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
     return _registrar;
 }
 
++ (BOOL)locationServiceAvailable {
+    // 查询是否有禁掉查看地理位置信息
+    if (![CLLocationManager locationServicesEnabled]) {
+        return NO;
+    }
+    else {
+        CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+        if (status != kCLAuthorizationStatusNotDetermined && (status==kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted))
+        {
+            return NO;
+        }
+    }
+    return YES;
+}
 @end
