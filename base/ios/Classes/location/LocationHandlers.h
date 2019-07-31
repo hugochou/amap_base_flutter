@@ -16,6 +16,7 @@
 #pragma 开始定位
 
 @interface StartLocate : NSObject <LocationMethodHandler, AMapLocationManagerDelegate, FlutterStreamHandler>
++ (BOOL)locationServiceAvailable;
 @end
 
 #pragma 结束定位

@@ -3,6 +3,7 @@
 #import "AMapViewFactory.h"
 #import "IMethodHandler.h"
 #import "FunctionRegistry.h"
+#import "LocationHandlers.h"
 
 static NSObject <FlutterPluginRegistrar> *_registrar;
 
@@ -16,10 +17,9 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
     FlutterMethodChannel *permissionChannel = [FlutterMethodChannel
             methodChannelWithName:@"me.yohom/permission"
                   binaryMessenger:[registrar messenger]];
-    __weak typeof(self) weakSelf = self;
     [permissionChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
         if ([@"requestPermission" isEqualToString:call.method]) {
-            result(@([weakSelf locationServiceAvailable]));
+            result(@([StartLocate locationServiceAvailable]));
         }
         else {
             result(@YES);
@@ -113,20 +113,5 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
 
 + (NSObject <FlutterPluginRegistrar> *)registrar {
     return _registrar;
-}
-
-+ (BOOL)locationServiceAvailable {
-    // 查询是否有禁掉查看地理位置信息
-    if (![CLLocationManager locationServicesEnabled]) {
-        return NO;
-    }
-    else {
-        CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
-        if (status != kCLAuthorizationStatusNotDetermined && (status==kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted))
-        {
-            return NO;
-        }
-    }
-    return YES;
 }
 @end

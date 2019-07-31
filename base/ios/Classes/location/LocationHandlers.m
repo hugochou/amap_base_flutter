@@ -76,7 +76,14 @@ static AMapLocationManager *_locationManager;
                                                                                       withError:error] mj_JSONString]);
                                        }];
     } else {
-        [_locationManager startUpdatingLocation];
+        if ([self.class locationServiceAvailable]) {
+            [_locationManager startUpdatingLocation];
+        }
+        else {
+            CLLocationManager *locationManager = [[CLLocationManager alloc] init];
+            [locationManager requestAlwaysAuthorization];
+            [_locationManager startUpdatingLocation];
+        }
     }
 
 }
@@ -99,6 +106,21 @@ static AMapLocationManager *_locationManager;
     return nil;
 }
 
+
++ (BOOL)locationServiceAvailable {
+    // 查询是否有禁掉查看地理位置信息
+    if (![CLLocationManager locationServicesEnabled]) {
+        return NO;
+    }
+    else {
+        CLAuthorizationStatus status = [CLLocationManager authorizationStatus];
+        if (status != kCLAuthorizationStatusNotDetermined && (status==kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted))
+        {
+            return NO;
+        }
+    }
+    return YES;
+}
 @end
 
 
