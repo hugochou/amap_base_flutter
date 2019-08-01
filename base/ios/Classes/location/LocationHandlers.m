@@ -97,6 +97,10 @@ static AMapLocationManager *_locationManager;
     }
 }
 
+- (void)amapLocationManager:(AMapLocationManager *)manager doRequireLocationAuth:(CLLocationManager *)locationManager {
+    NSLog(@"locationAuth:%@", @([self.class locationServiceAvailable]));
+}
+
 - (FlutterError *_Nullable)onListenWithArguments:(id _Nullable)arguments eventSink:(FlutterEventSink)events {
     _sink = events;
     return nil;
