@@ -1,8 +1,11 @@
 package me.yohom.amapbase.map
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Point
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
@@ -436,7 +439,15 @@ object ConvertToPoint : MapMethodHandler {
         val dict = call.argument<Map<String, Any>>("coordinate")
         val latlng = dict!!.getLntlng()
         val point = map.projection.toScreenLocation(latlng)
-        result.success(mapOf("x" to point.x, "y" to point.y))
+
+        val wm = registrar.context().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val dm = DisplayMetrics()
+        wm.defaultDisplay.getMetrics(dm)
+        val scale = dm.density
+        val x = point.x / scale
+        val y = point.y / scale
+        
+        result.success(mapOf("x" to x, "y" to y))
     }
 
     private fun Map<String, Any>.getLntlng(): LatLng {
@@ -463,9 +474,17 @@ object ConvertToCoordinate : MapMethodHandler {
     }
 
     private fun Map<String, Any>.getPoint(): Point {
-        val x = get("x") as Number
-        val y = get("y") as Number
-        return Point(x.toInt(), y.toInt())
+        var x = (get("x") as Number).toDouble()
+        var y = (get("y") as Number).toDouble()
+
+        val wm = registrar.context().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val dm = DisplayMetrics()
+        wm.defaultDisplay.getMetrics(dm)
+        val scale = dm.density
+        x = x * scale
+        y = y * scale
+
+        return Point((x as Number).toInt(), (y as Number).toInt())
     }
 }
 
