@@ -212,34 +212,6 @@
 }
 @end
 
-@interface HideInfoWindow()
-@property (nonatomic, strong) MAMapView *mapView;
-@property (nonatomic, strong) UIView *annotationView;
-@end
-@implementation HideInfoWindow
-
-- (instancetype)initWith:(MAMapView *)mapView {
-    if (self = [super init]) {
-        self.mapView = mapView;
-    }
-    return self;
-}
-- (instancetype)initWith:(MAMapView *)mapView annotationView:(MamAnnotationView *)annotationView {
-    if (self = [super init]) {
-        self.mapView = mapView;
-        self.annotationView = annotationView;
-    }
-    return self;
-}
-
-- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
-    if (self.annotationView != nil && [self.annotationView isKindOfClass:MamAnnotationView.class]) {
-        [((MamAnnotationView *)self.annotationView) animateToHideAnnowtationViewDetail];
-    }
-}
-
-@end
-
 @implementation ClearMap {
     MAMapView *_mapView;
 }

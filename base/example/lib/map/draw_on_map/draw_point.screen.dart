@@ -63,11 +63,10 @@ class DrawPointScreenState extends State<DrawPointScreen>
                     onAMapViewCreated: (controller) {
                       _controller = controller;
                       _controller.markerClickedEvent.listen((marker) {
-                        _needRequest = false;
                         _showInfo(marker);
                       });
                       _controller.markerDeselectEvent.listen((marker) {
-                        _hideInfo();
+                        if (_needRequest) _hideInfo();
                       });
                       _controller.cameraChangeEvent.listen((data) {
                         if (_needRequest) _hideInfo();
@@ -142,6 +141,8 @@ class DrawPointScreenState extends State<DrawPointScreen>
   }
 
   void _showInfo(MarkerOptions marker) {
+    _needRequest = false;
+
     _markerOptions = marker;
     _halfViewKey.currentState.content = marker.toString();
 
@@ -175,6 +176,7 @@ class DrawPointScreenState extends State<DrawPointScreen>
       _animCtrl.reverse();
     }
     _controller.hideInfoWindow();
+    _needRequest = true;
   }
 }
 

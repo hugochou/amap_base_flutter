@@ -57,7 +57,7 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
 
 @end
 
-@interface AMapView()
+@interface AMapView()<UIGestureRecognizerDelegate>
 @property (nonatomic, strong) MAMapView *mapView;
 @property (nonatomic, strong) MAAnnotationView *annotationView; // 选中的
 @end
@@ -122,6 +122,11 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
   }
   _mapView.logoCenter = logoPosition;
   _mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(mapViewDidTaped:)];
+    tap.delegate = self;
+    [self.mapView addGestureRecognizer:tap];
+    
   //endregion
 
   _methodChannel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"%@%lld", mapChannelName, _viewId]
@@ -140,17 +145,15 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
       } else {
         strongSelf->_centerAnnotation = nil;
       }
+    } else if ([call.method isEqualToString:@"map#hideInfoWindow"]) {
+        if (strongSelf.annotationView != nil && [strongSelf.annotationView isKindOfClass:MamAnnotationView.class]) {
+            [((MamAnnotationView *)strongSelf.annotationView) animateToHideAnnowtationViewDetail];
+            strongSelf.annotationView = nil;
+        }
     } else {
       NSObject <MapMethodHandler> *handler = [MapFunctionRegistry mapMethodHandler][call.method];
       if (handler) {
-          if ([call.method isEqualToString:@"map#hideInfoWindow"]) {
-              [[(HideInfoWindow *)handler initWith:strongSelf.mapView annotationView:strongSelf.annotationView] onMethodCall:call :result];
-              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MamAnnotationView animationDuration] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                  strongSelf.annotationView = nil;
-              });
-          } else {
-              [[handler initWith:strongSelf.mapView] onMethodCall:call :result];
-          }
+          [[handler initWith:strongSelf.mapView] onMethodCall:call :result];
       } else {
           result(FlutterMethodNotImplemented);
       }
@@ -178,18 +181,38 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
   [_cameraChangeFinishEventChannel setStreamHandler:_cameraChangeFinishHandler];
 }
 
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return YES;
+}
+
+- (void)mapViewDidTaped:(UITapGestureRecognizer *)gestureRecognizer {
+    CGPoint point = [gestureRecognizer locationInView:self.mapView];
+    if (self.annotationView != nil && CGRectContainsPoint(self.annotationView.frame, point)) {
+        return;
+    }
+    
+    if (self.annotationView != nil && [self.annotationView isKindOfClass:MamAnnotationView.class]) {
+        [self mapView:self.mapView didDeselectAnnotationView:self.annotationView];
+    }
+}
+
 #pragma MAMapViewDelegate
 
 /// 点击annotation回调
 - (void)mapView:(MAMapView *)mapView didSelectAnnotationView:(MAAnnotationView *)view {
+    if (self.annotationView != nil && self.annotationView.annotation == view.annotation) {
+        return;
+    }
+
     if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _eventHandler.sink) {
         MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
         _eventHandler.sink([annotation.markerOptions mj_JSONString]);
     }
     
     if ([view isKindOfClass:[MamAnnotationView class]]) {
-        if (self.annotationView != nil && [self.annotationView isKindOfClass:MamAnnotationView.class])
+        if (self.annotationView != nil && [self.annotationView isKindOfClass:MamAnnotationView.class]) {
             [((MamAnnotationView *)self.annotationView) animateToHideAnnowtationViewDetail];
+        }
         self.annotationView = view;
         MamAnnotationView *annotationView = (MamAnnotationView*)view;
         [annotationView animateToShowAnnowtationViewDetail];
@@ -197,6 +220,8 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
 }
 
 -(void)mapView:(MAMapView *)mapView didDeselectAnnotationView:(MAAnnotationView *)view {
+    // 地图范围改变也会触发此方法，且此方法与didSelectAnnotationView是配对出现的
+    // 所以避免点击地图空白处无法触发此方法，前面为地图加了tap手势解决
     if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _markerDeselectHandler.sink) {
         MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
         _markerDeselectHandler.sink([annotation.markerOptions mj_JSONString]);
