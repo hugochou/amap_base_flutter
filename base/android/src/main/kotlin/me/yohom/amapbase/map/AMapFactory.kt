@@ -100,6 +100,11 @@ class AMapView(context: Context,
             if (call.method == "map#setCenterMarkerId") {
                 val markerId = call.argument<String>("markerId") ?: ""
                 centerMarker = mapView.map.mapScreenMarkers.filter { it.id == markerId }.first()
+            } else if (call.method == "map#hideInfoWindow") {
+                if (selectedMarker != null) {
+                    selectedMarker!!.hideInfoWindow()
+                    selectedMarker = null
+                }
             } else {
                 MAP_METHOD_HANDLER[call.method]
                         ?.with(mapView.map)
@@ -137,9 +142,7 @@ class AMapView(context: Context,
         })
         mapView.map.setOnMapClickListener {
             if (selectedMarker != null) {
-                selectedMarker?.hideInfoWindow()
                 deselectSink?.success(UnifiedMarkerOptions(selectedMarker!!).toFieldJson())
-                selectedMarker = null
             }
             true
         }
@@ -233,10 +236,6 @@ class AMapView(context: Context,
         if (centerMarker != null && p0 != null) {
             centerMarker!!.position = p0!!.target
         }
-        if (selectedMarker != null) {
-            selectedMarker!!.hideInfoWindow()
-            selectedMarker = null
-        }
     }
 
     // implemented InfoWindowAdapter (add by Chris)
@@ -258,7 +257,13 @@ class AMapView(context: Context,
         val textView = view.findViewById<TextView>(R.id.textView)
         textView.setText(title)
 
-        val image = UnifiedAssets.getBitmap("images/mam_pin_in_${marker?.snippet ?: 1}.png")
+        var type: Int = 0
+        var map: Map<*, *>
+        if (marker != null && marker!!.`object` is Map<*, *>) {
+            map = marker!!.`object` as Map<*, *>
+            type = (map["type"] as Number).toInt()
+        }
+        val image = UnifiedAssets.getBitmap("images/mam_pin_in_$type.png")
         val imageView = view.findViewById<ImageView>(R.id.imageView)
         imageView.setImageBitmap(image)
     }

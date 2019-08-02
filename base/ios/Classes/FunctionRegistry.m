@@ -44,6 +44,7 @@ static NSDictionary<NSString *, NSObject <MapMethodHandler> *> *_mapDictionary;
                 @"map#getCenterPoint":[GetCenterPoint alloc],
                 @"map#convertToPoint":[ConvertToPoint alloc],
                 @"map#convertToCoordinate":[ConvertToCoordinate alloc],
+                @"map#hideInfoWindow":[HideInfoWindow alloc],
         };
     }
     return _mapDictionary;

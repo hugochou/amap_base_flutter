@@ -440,8 +440,8 @@ object ConvertToPoint : MapMethodHandler {
     }
 
     private fun Map<String, Any>.getLntlng(): LatLng {
-        val lat = get("latitude") as Double
-        val lng = get("longitude") as Double
+        val lat = (get("latitude") as Number).toDouble()
+        val lng = (get("longitude") as Number).toDouble()
         return LatLng(lat, lng)
     }
 }

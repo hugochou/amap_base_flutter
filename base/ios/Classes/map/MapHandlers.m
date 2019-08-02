@@ -10,6 +10,7 @@
 #import "MapModels.h"
 #import "MJExtension.h"
 #import "UnifiedAssets.h"
+#import "MamAnnotationView.h"
 
 @implementation SetCustomMapStyleID {
     MAMapView *_mapView;
@@ -211,6 +212,34 @@
 }
 @end
 
+@interface HideInfoWindow()
+@property (nonatomic, strong) MAMapView *mapView;
+@property (nonatomic, strong) UIView *annotationView;
+@end
+@implementation HideInfoWindow
+
+- (instancetype)initWith:(MAMapView *)mapView {
+    if (self = [super init]) {
+        self.mapView = mapView;
+    }
+    return self;
+}
+- (instancetype)initWith:(MAMapView *)mapView annotationView:(MamAnnotationView *)annotationView {
+    if (self = [super init]) {
+        self.mapView = mapView;
+        self.annotationView = annotationView;
+    }
+    return self;
+}
+
+- (void)onMethodCall:(FlutterMethodCall *)call :(FlutterResult)result {
+    if (self.annotationView != nil && [self.annotationView isKindOfClass:MamAnnotationView.class]) {
+        [((MamAnnotationView *)self.annotationView) animateToHideAnnowtationViewDetail];
+    }
+}
+
+@end
+
 @implementation ClearMap {
     MAMapView *_mapView;
 }
@@ -293,7 +322,7 @@
     // 由于iOS端是从0开始算的, 所以这里减去1
     NSInteger mapType = [paramDic[@"mapType"] integerValue] - 1;
 
-    NSLog(@"方法map#setMapType ios端参数: mapType -> %d", mapType);
+    NSLog(@"方法map#setMapType ios端参数: mapType -> %ld", mapType);
 
     [_mapView setMapType:(MAMapType) mapType];
 

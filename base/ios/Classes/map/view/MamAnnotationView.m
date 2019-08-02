@@ -26,6 +26,10 @@
 @end
 @implementation MamAnnotationView
 
++(CGFloat)animationDuration {
+    return AnimationDuration;
+}
+
 -(instancetype)initWithAnnotation:(id)annotation reuseIdentifier:(NSString *)reuseIdentifier
 {
     self = [super initWithAnnotation:annotation reuseIdentifier:reuseIdentifier];

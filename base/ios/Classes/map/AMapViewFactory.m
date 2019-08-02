@@ -57,6 +57,10 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
 
 @end
 
+@interface AMapView()
+@property (nonatomic, strong) MAMapView *mapView;
+@property (nonatomic, strong) MAAnnotationView *annotationView; // 选中的
+@end
 @implementation AMapView {
   CGRect _frame;
   int64_t _viewId;
@@ -66,7 +70,6 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
   FlutterEventChannel *_markerDeselectEventChannel;
   FlutterEventChannel *_cameraChangeEventChannel;
   FlutterEventChannel *_cameraChangeFinishEventChannel;
-  MAMapView *_mapView;
   MarkerEventHandler *_eventHandler;
   MarkerEventHandler *_markerDeselectHandler;
   MarkerEventHandler *_cameraChangeHandler;
@@ -140,9 +143,16 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
     } else {
       NSObject <MapMethodHandler> *handler = [MapFunctionRegistry mapMethodHandler][call.method];
       if (handler) {
-        [[handler initWith:strongSelf->_mapView] onMethodCall:call :result];
+          if ([call.method isEqualToString:@"map#hideInfoWindow"]) {
+              [[(HideInfoWindow *)handler initWith:strongSelf.mapView annotationView:strongSelf.annotationView] onMethodCall:call :result];
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MamAnnotationView animationDuration] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                  strongSelf.annotationView = nil;
+              });
+          } else {
+              [[handler initWith:strongSelf.mapView] onMethodCall:call :result];
+          }
       } else {
-        result(FlutterMethodNotImplemented);
+          result(FlutterMethodNotImplemented);
       }
     }
   }];
@@ -172,23 +182,21 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
 
 /// 点击annotation回调
 - (void)mapView:(MAMapView *)mapView didSelectAnnotationView:(MAAnnotationView *)view {
+    if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _eventHandler.sink) {
+        MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
+        _eventHandler.sink([annotation.markerOptions mj_JSONString]);
+    }
+    
     if ([view isKindOfClass:[MamAnnotationView class]]) {
+        if (self.annotationView != nil && [self.annotationView isKindOfClass:MamAnnotationView.class])
+            [((MamAnnotationView *)self.annotationView) animateToHideAnnowtationViewDetail];
+        self.annotationView = view;
         MamAnnotationView *annotationView = (MamAnnotationView*)view;
         [annotationView animateToShowAnnowtationViewDetail];
     }
-    
-  if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _eventHandler.sink) {
-    MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
-    _eventHandler.sink([annotation.markerOptions mj_JSONString]);
-  }
 }
 
 -(void)mapView:(MAMapView *)mapView didDeselectAnnotationView:(MAAnnotationView *)view {
-    if ([view isKindOfClass:[MamAnnotationView class]]) {
-        MamAnnotationView *annotationView = (MamAnnotationView*)view;
-        [annotationView animateToHideAnnowtationViewDetail];
-    }
-    
     if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _markerDeselectHandler.sink) {
         MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
         _markerDeselectHandler.sink([annotation.markerOptions mj_JSONString]);

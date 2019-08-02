@@ -9,6 +9,7 @@
 #import "MAMapKit.h"
 
 @interface MamAnnotationView : MAAnnotationView
++ (CGFloat)animationDuration;
 -(void)animateToShowAnnowtationViewDetail;
 -(void)animateToHideAnnowtationViewDetail;
 -(void)setupBackImage:(UIImage*)backImage

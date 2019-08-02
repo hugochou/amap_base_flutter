@@ -27,6 +27,10 @@
 @interface ConvertToCoordinate : NSObject <MapMethodHandler>
 @end
 
+@interface HideInfoWindow : NSObject <MapMethodHandler>
+- (instancetype)initWith:(MAMapView *)mapView annotationView:(UIView *)annotationView;
+@end
+
 @interface CalcDistance : NSObject <MapMethodHandler>
 @end
 

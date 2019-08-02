@@ -229,7 +229,10 @@ class AMapController {
 
     Map<dynamic, dynamic> pointDict =
         await _mapChannel.invokeMethod("map#convertToPoint", params);
-    Offset point = Offset(pointDict['x'], pointDict['y']);
+    Offset point = Offset(
+      (pointDict['x'] as num).toDouble(),
+      (pointDict['y'] as num).toDouble(),
+    );
     return point;
   }
 
@@ -243,6 +246,11 @@ class AMapController {
         await _mapChannel.invokeMethod("map#convertToCoordinate", params);
     final latlng = LatLng(coorDict['latitude'], coorDict['longitude']);
     return latlng;
+  }
+
+  /// 隐藏标注点信息详情
+  Future<void> hideInfoWindow() async {
+    await _mapChannel.invokeMethod("map#hideInfoWindow");
   }
 
   /// 截图
