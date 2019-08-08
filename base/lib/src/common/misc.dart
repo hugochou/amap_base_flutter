@@ -97,3 +97,11 @@ String toResolutionAware(String assetName) {
   L.p('设备devicePixelRatio: $devicePixelRatio, 选中的图片: $chosenName');
   return chosenName;
 }
+
+
+String colorToString(Color color) {
+  return color.alpha.toRadixString(16).padLeft(2, '0') +
+      color.red.toRadixString(16).padLeft(2, '0') +
+      color.green.toRadixString(16).padLeft(2, '0') +
+      color.blue.toRadixString(16).padLeft(2, '0');
+}

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:amap_base/src/common/misc.dart';
 import 'package:flutter/material.dart';
 
 /// 定位、且将视角移动到地图中心点，定位点跟随设备移动
@@ -96,16 +97,16 @@ class MyLocationStyle {
       'myLocationIcon': myLocationIcon,
       'anchorU': anchorU,
       'anchorV': anchorV,
-      'radiusFillColor': radiusFillColor.value.toRadixString(16),
-      'strokeColor': strokeColor.value.toRadixString(16),
+      'radiusFillColor': colorToString(radiusFillColor),
+      'strokeColor': colorToString(strokeColor),
       'strokeWidth': strokeWidth,
       'myLocationType': myLocationType,
       'interval': interval,
       'showMyLocation': showMyLocation,
       'showsAccuracyRing': showsAccuracyRing,
       'showsHeadingIndicator': showsHeadingIndicator,
-      'locationDotBgColor': locationDotBgColor.value.toRadixString(16),
-      'locationDotFillColor': locationDotFillColor.value.toRadixString(16),
+      'locationDotBgColor': colorToString(locationDotBgColor),
+      'locationDotFillColor': colorToString(locationDotFillColor),
       'enablePulseAnnimation': enablePulseAnnimation,
       'image': image,
     };

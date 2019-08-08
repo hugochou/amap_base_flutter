@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:amap_base/amap_base.dart';
+import 'package:amap_base/src/common/misc.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
@@ -73,7 +74,7 @@ class PolylineOptions {
     return {
       'latLngList': latLngList?.map((it) => it.toJson())?.toList() ?? List(),
       'width': width,
-      'color': color.value.toRadixString(16),
+      'color': colorToString(color),
       'zIndex': zIndex,
       'isVisible': isVisible,
       'isDottedLine': isDottedLine,

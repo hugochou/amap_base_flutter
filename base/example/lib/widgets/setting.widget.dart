@@ -116,7 +116,7 @@ class ColorSetting extends StatelessWidget {
   Widget build(BuildContext context) {
     return DiscreteSetting(
       head: head,
-      options: ['绿色', '红色', '黄色'],
+      options: ['绿色', '红色', '黄色', '透明'],
       onSelected: (value) {
         Color color;
         switch (value) {
@@ -128,6 +128,9 @@ class ColorSetting extends StatelessWidget {
             break;
           case '黄色':
             color = Colors.yellow.withOpacity(0.6);
+            break;
+          case '透明':
+            color = Colors.transparent;
             break;
         }
 
