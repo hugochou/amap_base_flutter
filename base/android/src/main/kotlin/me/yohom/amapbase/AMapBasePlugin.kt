@@ -54,8 +54,9 @@ class AMapBasePlugin {
                                 registrar.addRequestPermissionsResultListener { code, _, grantResults ->
                                     if (code == permissionRequestCode) {
                                         methodResult?.success(grantResults.all { it == PackageManager.PERMISSION_GRANTED })
+                                        return@addRequestPermissionsResultListener true
                                     }
-                                    return@addRequestPermissionsResultListener true
+                                    return@addRequestPermissionsResultListener false
                                 }
                             }
                             else -> result.notImplemented()
