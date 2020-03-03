@@ -249,6 +249,15 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
     }
 
     return polylineRenderer;
+      
+  } else if ([overlay isKindOfClass:[CircleOverlay class]]) {
+    CircleOverlay *circle = (CircleOverlay *) overlay;
+    UnifiedCircleOptions *options = [circle options];
+    MACircleRenderer *circleRenderer = [[MACircleRenderer alloc] initWithCircle:circle];
+    circleRenderer.lineWidth    = options.strokeWidth;
+    circleRenderer.strokeColor  = [options.strokeColor hexStringToColor];
+    circleRenderer.fillColor    = [options.fillColor hexStringToColor];
+    return circleRenderer;
   }
 
   return nil;

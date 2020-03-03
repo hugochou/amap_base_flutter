@@ -347,7 +347,7 @@ object AddMarkers : MapMethodHandler {
 
         val markers = map.addMarkers(optionsList, moveToCenter)
 
-        markers.forEachIndexed {index, marker -> marker.`object` = unifiedMarkerOptions[index].`object` }
+        markers.forEachIndexed { index, marker -> marker.`object` = unifiedMarkerOptions[index].`object` }
 
         result.success(markers.map { it.id })
     }
@@ -388,6 +388,22 @@ object AddPolyline : MapMethodHandler {
 
         options?.applyTo(map)
 
+        result.success(success)
+    }
+}
+
+object AddCircle : MapMethodHandler {
+    lateinit var map: AMap
+
+    override fun with(map: AMap): MapMethodHandler {
+        this.map = map
+        return this
+    }
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        val options = call.argument<String>("options")?.parseFieldJson<UnifiedCircleOptions>()
+        log("map#AddCircle android端参数: options -> $options")
+        options?.applyTo(map)
         result.success(success)
     }
 }
@@ -446,7 +462,7 @@ object ConvertToPoint : MapMethodHandler {
         val scale = dm.density
         val x = point.x / scale
         val y = point.y / scale
-        
+
         result.success(mapOf("x" to x, "y" to y))
     }
 

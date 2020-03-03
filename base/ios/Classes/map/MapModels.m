@@ -20,6 +20,11 @@
 }
 @end
 
+@implementation CircleOverlay {
+
+}
+@end
+
 
 @implementation UnifiedAMapOptions {
 }
@@ -194,6 +199,16 @@
         };
     }];
     return [UnifiedPolylineOptions mj_objectWithKeyValues:json];
+}
+
+@end
+
+
+@implementation UnifiedCircleOptions {
+
+}
++ (instancetype)initWithJson:(NSString *)json {
+    return [UnifiedCircleOptions mj_objectWithKeyValues:json];
 }
 
 @end

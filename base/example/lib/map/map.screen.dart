@@ -17,6 +17,7 @@ import 'package:amap_base_example/widgets/function_item.widget.dart';
 import 'package:flutter/material.dart';
 
 import 'draw_on_map/convert_point.screen.dart';
+import 'draw_on_map/draw_circle.screen.dart';
 
 class MapDemo extends StatelessWidget {
   @override
@@ -107,6 +108,11 @@ class MapDemo extends StatelessWidget {
               label: '绘制线',
               sublabel: 'DrawPolylineScreen',
               target: DrawPolylineScreen(),
+            ),
+            FunctionItem(
+              label: '绘制圆',
+              sublabel: 'DrawCircleScreen',
+              target: DrawCircleScreen(),
             ),
             FunctionItem(
               label: '屏幕坐标转换',

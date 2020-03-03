@@ -260,6 +260,31 @@ class UnifiedPolylineOptions(
 
 }
 
+class UnifiedCircleOptions(
+        /// 顶点
+        val center: LatLng,
+        /// 线段的宽度
+        val radius: Double,
+        /// 线段的颜色
+        val fillColor: String,
+        /// 线段的颜色
+        val strokeColor: String,
+        /// 线段的宽度
+        val strokeWidth: Double
+) {
+
+    fun applyTo(map: AMap) {
+        map.addCircle(CircleOptions().apply {
+            center(this@UnifiedCircleOptions.center)
+            radius(this@UnifiedCircleOptions.radius)
+            fillColor(this@UnifiedCircleOptions.fillColor.hexStringToColorInt() ?: Color.TRANSPARENT)
+            strokeColor(this@UnifiedCircleOptions.strokeColor.hexStringToColorInt() ?: Color.BLACK)
+            strokeWidth(this@UnifiedCircleOptions.strokeWidth.toFloat())
+        })
+    }
+
+}
+
 class UnifiedUiSettings(
         /// 是否允许显示缩放按钮
         private val isZoomControlsEnabled: Boolean,

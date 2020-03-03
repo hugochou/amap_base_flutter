@@ -10,6 +10,7 @@
 @class LatLng;
 @class CameraPosition;
 @class UnifiedPolylineOptions;
+@class UnifiedCircleOptions;
 @class MAMapView;
 
 
@@ -20,6 +21,10 @@
 
 @interface PolylineOverlay : MAPolyline
 @property(nonatomic) UnifiedPolylineOptions *options;
+@end
+
+@interface CircleOverlay : MACircle
+@property(nonatomic) UnifiedCircleOptions *options;
 @end
 
 
@@ -193,6 +198,23 @@
 @property(nonatomic) BOOL isUseGradient;
 /// 线段是否使用纹理贴图
 @property(nonatomic) BOOL isUseTexture;
+
+@end
+
+@interface UnifiedCircleOptions : NSObject
+
++ (instancetype)initWithJson:(NSString *)json;
+
+/// 原点
+@property(nonatomic) LatLng *center;
+/// 半径
+@property(nonatomic) CGFloat radius;
+/// 填充颜色
+@property(nonatomic) NSString *fillColor;
+/// 边框颜色
+@property(nonatomic) NSString *strokeColor;
+/// 边框的宽度
+@property(nonatomic) CGFloat strokeWidth;
 
 @end
 

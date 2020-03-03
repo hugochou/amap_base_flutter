@@ -33,6 +33,7 @@ static NSDictionary<NSString *, NSObject <MapMethodHandler> *> *_mapDictionary;
                 @"tool#convertCoordinate": [ConvertCoordinate alloc],
                 @"offline#openOfflineManager": [OpenOfflineManager alloc],
                 @"map#addPolyline": [AddPolyline alloc],
+                @"map#addCircle": [AddCircle alloc],
                 @"map#zoomToSpan": [ZoomToSpan alloc],
                 @"map#changeLatLng": [ChangeLatLng alloc],
                 @"map#screenshot":[ScreenShot alloc],
