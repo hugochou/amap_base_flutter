@@ -3,13 +3,6 @@ import 'package:amap_base_example/utils/misc.dart';
 import 'package:amap_base_example/utils/view.dart';
 import 'package:flutter/material.dart';
 
-const polylineList = const [
-  LatLng(39.999391, 116.135972),
-  LatLng(39.898323, 116.057694),
-  LatLng(39.900430, 116.265061),
-  LatLng(39.955192, 116.140092),
-];
-
 class DrawPolylineScreen extends StatefulWidget {
   DrawPolylineScreen();
 
@@ -22,6 +15,13 @@ class DrawPolylineScreen extends StatefulWidget {
 class _DrawPolylineScreenState extends State<DrawPolylineScreen> {
   AMapController _controller;
 
+  final polylineList = const [
+    LatLng(39.999391, 116.135972),
+    LatLng(39.898323, 116.057694),
+    LatLng(39.900430, 116.265061),
+    LatLng(39.955192, 116.140092),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +31,9 @@ class _DrawPolylineScreenState extends State<DrawPolylineScreen> {
         centerTitle: true,
       ),
       body: AMapView(
-        onAMapViewCreated: (controller) {
+        onAMapViewCreated: (controller) async{
           _controller = controller;
+          await Future.delayed(Duration(microseconds: 500));
           loading(
             context,
             controller.addPolyline(
@@ -46,6 +47,7 @@ class _DrawPolylineScreenState extends State<DrawPolylineScreen> {
               ),
             ),
           ).catchError((e) => showError(context, e.toString()));
+          controller.zoomToSpan(polylineList, padding: 50);
         },
         amapOptions: AMapOptions(),
       ),

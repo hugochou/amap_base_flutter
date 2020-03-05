@@ -138,6 +138,15 @@
     return description;
 }
 
+- (id)mj_newValueFromOldValue:(id)oldValue property:(MJProperty *)property
+{
+  // 锚点偏移修正
+  if ([property.name isEqualToString:@"anchorU"] || [property.name isEqualToString:@"anchorV"]) {
+    return @(0.5 - [(NSNumber *)oldValue floatValue]);
+  }
+  return oldValue;
+}
+
 @end
 
 

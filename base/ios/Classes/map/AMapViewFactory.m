@@ -294,14 +294,38 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
             [customAnnotationView setupBackImage:bgImg IconImage:icon DetailText:options.title];
             [customAnnotationView setExclusiveTouch:YES];
             return customAnnotationView;
-        }
-        else {
+        } else {
+          NSString *imagePath;
           if (options.icon != nil) {
-            annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getAssetPath:options.icon]];
+            imagePath = [UnifiedAssets getAssetPath:options.icon];
           } else {
-            annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"]];
+            imagePath=[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"];
           }
-          annotationView.centerOffset = CGPointMake(options.anchorU, options.anchorV);
+          
+          // 根据图片所在文件夹，获取图片scale
+          CGFloat imageScale = 1.0;
+          NSError *error;
+          NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"/assets/(\\d+)x/" options:NSRegularExpressionCaseInsensitive error:&error];
+          NSArray *matches = [regex matchesInString:imagePath
+                                            options:0
+                                              range:NSMakeRange(0, [imagePath length])];
+          if (matches.count>0 && [matches.firstObject numberOfRanges] >= 2) {
+            NSRange matchRange = [[matches firstObject] rangeAtIndex:1];
+            NSString *matchString = [imagePath substringWithRange:matchRange];
+            imageScale = [matchString floatValue];
+          }
+          
+          // 设置大头针图片
+          NSData* data = [NSData dataWithContentsOfFile:imagePath];
+          UIImage *image = [[UIImage alloc] initWithData:data scale:imageScale];
+          annotationView.image = image;
+
+          // 设置大头针中心点偏移
+          CGFloat scale = [UIScreen mainScreen].scale;
+          CGSize size = CGSizeMake(annotationView.image.size.width / scale, annotationView.image.size.height / scale);
+          CGPoint anchor = CGPointMake(size.width * options.anchorU, size.height * options.anchorV);
+          annotationView.centerOffset = anchor;
+          
           annotationView.calloutOffset = CGPointMake(options.infoWindowOffsetX, options.infoWindowOffsetY);
           annotationView.draggable = options.draggable;
           annotationView.canShowCallout = options.infoWindowEnable;
@@ -317,11 +341,11 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
       }
     }
 
-    if (annotationView.image != nil) {
-      CGSize size = annotationView.imageView.frame.size;
-      annotationView.frame = CGRectMake(annotationView.center.x + size.width / 2, annotationView.center.y, 36, 36);
-      annotationView.centerOffset = CGPointMake(0, -18);
-    }
+//    if (annotationView.image != nil) {
+//      CGSize size = annotationView.imageView.frame.size;
+//      annotationView.frame = CGRectMake(annotationView.center.x + size.width / 2, annotationView.center.y, 36, 36);
+//      annotationView.centerOffset = CGPointMake(0, -18);
+//    }
 
     return annotationView;
   }
