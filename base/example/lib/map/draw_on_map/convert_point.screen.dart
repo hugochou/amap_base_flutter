@@ -6,8 +6,7 @@ class ConvertPointScreen extends StatefulWidget {
   _ConvertPointScreenState createState() => _ConvertPointScreenState();
 }
 
-class _ConvertPointScreenState extends State<ConvertPointScreen>
-    with SingleTickerProviderStateMixin {
+class _ConvertPointScreenState extends State<ConvertPointScreen> with SingleTickerProviderStateMixin {
   LatLng _latLng;
   MarkerOptions _targetMarker;
   AMapController _mapCtrl;
@@ -24,8 +23,7 @@ class _ConvertPointScreenState extends State<ConvertPointScreen>
   void initState() {
     super.initState();
 
-    _animationCtrl =
-        AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+    _animationCtrl = AnimationController(duration: Duration(milliseconds: 300), vsync: this);
   }
 
   @override
@@ -55,13 +53,22 @@ class _ConvertPointScreenState extends State<ConvertPointScreen>
                     await controller.setZoomLevel(19);
                     final center = await _mapCtrl?.getCenterLatlng();
 
+//                    _targetMarker = MarkerOptions(
+//                      position: center,
+//                      object: 1,
+//                      title: '哈哈哈哈哈',
+//                      infoWindowEnable: false,
+////                      icon: 'images/map_pin_mam.png',
+//                    );
+
                     _targetMarker = MarkerOptions(
                       position: center,
-                      object: 1,
-                      title: '哈哈哈哈哈',
+                      icon: 'images/ic_marker_store.png',
                       infoWindowEnable: false,
-//                      icon: 'images/map_pin_mam.png',
+                      enabled: true,
+                      object: {'selectedIcon': 'images/ic_marker_store_selected.png'},
                     );
+
                     final id = await _mapCtrl.addMarker(_targetMarker);
                     _markerIds = [id];
                     _mapCtrl.setCenterMarkerId(id);
@@ -98,8 +105,7 @@ class _ConvertPointScreenState extends State<ConvertPointScreen>
                 key: _containerKey,
                 padding: const EdgeInsets.all(15),
                 color: Colors.white,
-                child: Text(
-                    'lat: ${_latLng?.latitude ?? 0}\nlon:${_latLng?.longitude ?? 0}'),
+                child: Text('lat: ${_latLng?.latitude ?? 0}\nlon:${_latLng?.longitude ?? 0}'),
               ),
             ),
           )
@@ -145,8 +151,7 @@ class _ConvertPointScreenState extends State<ConvertPointScreen>
     setState(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final height = _containerKey.currentContext.size.height;
-        _positionAnim =
-            Tween(begin: -(height ?? 0.0), end: 15.0).animate(_animationCtrl);
+        _positionAnim = Tween(begin: -(height ?? 0.0), end: 15.0).animate(_animationCtrl);
         _opacityAnim = Tween(begin: 0.0, end: 1.0).animate(_animationCtrl);
         _animationCtrl.forward();
       });

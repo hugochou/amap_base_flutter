@@ -124,6 +124,11 @@ class AMapView(context: Context,
         })
         mapView.map.setOnMarkerClickListener {
             selectedMarker = it
+            val obj = it.`object`
+            if (obj != null && obj is Map<*, *> && obj["selectedIcon"] != null) {
+                var selectedIcon = obj["selectedIcon"] as String
+                it.setIcon(UnifiedAssets.getBitmapDescriptor(selectedIcon))
+            }
             it.showInfoWindow()
             eventSink?.success(UnifiedMarkerOptions(it).toFieldJson())
             true
@@ -142,6 +147,10 @@ class AMapView(context: Context,
         })
         mapView.map.setOnMapClickListener {
             if (selectedMarker != null) {
+                val icon = selectedMarker?.options?.icon
+                if (icon != null) {
+                    selectedMarker?.setIcon(icon)
+                }
                 deselectSink?.success(UnifiedMarkerOptions(selectedMarker!!).toFieldJson())
             }
             true

@@ -95,6 +95,7 @@ class MarkerOptions {
   /// 自定义信息
   /// object['id']：站点id
   /// object['type']: 站点类型：1-充电站； 2-换电站
+  /// object['selectedIcon']: 选中时的图标，为空则保留原图标不变
   dynamic object;
 
   MarkerOptions({
@@ -146,8 +147,7 @@ class MarkerOptions {
     isFlat = json['isFlat'] as bool;
     isGps = json['isGps'] as bool;
     period = json['period'] as num;
-    position =
-        json['position'] != null ? LatLng.fromJson(json['position']) : null;
+    position = json['position'] != null ? LatLng.fromJson(json['position']) : null;
     rotateAngle = json['rotateAngle'] as num;
     snippet = json['snippet'] as String;
     title = json['title'] as String;
@@ -157,6 +157,9 @@ class MarkerOptions {
   }
 
   Map<String, Object> toJson() {
+    if (object != null && object['selectedIcon'] != null) {
+      object['selectedIcon'] = toResolutionAware(object['selectedIcon']);
+    }
     return {
       'icon': toResolutionAware(icon),
       'icons': icons?.map((it) => toResolutionAware(it))?.toList(),

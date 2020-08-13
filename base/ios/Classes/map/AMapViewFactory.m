@@ -12,6 +12,7 @@
 #import "FunctionRegistry.h"
 #import "MapHandlers.h"
 #import "MamAnnotationView.h"
+#import "NormalAnnotationView.h"
 
 static NSString *mapChannelName = @"me.yohom/map";
 static NSString *markerClickedChannelName = @"me.yohom/marker_clicked";
@@ -204,9 +205,10 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
         return;
     }
 
-    if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _eventHandler.sink) {
+    if ([view.annotation isKindOfClass:[MarkerAnnotation class]]) {
         MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
-        _eventHandler.sink([annotation.markerOptions mj_JSONString]);
+        view.selected = YES;
+        if (_eventHandler.sink) _eventHandler.sink([annotation.markerOptions mj_JSONString]);
     }
     
     if ([view isKindOfClass:[MamAnnotationView class]]) {
@@ -222,9 +224,11 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
 -(void)mapView:(MAMapView *)mapView didDeselectAnnotationView:(MAAnnotationView *)view {
     // 地图范围改变也会触发此方法，且此方法与didSelectAnnotationView是配对出现的
     // 所以避免点击地图空白处无法触发此方法，前面为地图加了tap手势解决
-    if ([view.annotation isKindOfClass:[MarkerAnnotation class]] && _markerDeselectHandler.sink) {
+
+    if ([view.annotation isKindOfClass:[MarkerAnnotation class]]) {
+        view.selected = NO;
         MarkerAnnotation *annotation = (MarkerAnnotation *) view.annotation;
-        _markerDeselectHandler.sink([annotation.markerOptions mj_JSONString]);
+        if (_markerDeselectHandler.sink) _markerDeselectHandler.sink([annotation.markerOptions mj_JSONString]);
     }
 }
 
@@ -273,10 +277,6 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
     static NSString *routePlanningCellIdentifier = @"RoutePlanningCellIdentifier";
 
     MAAnnotationView *annotationView = [_mapView dequeueReusableAnnotationViewWithIdentifier:routePlanningCellIdentifier];
-    if (annotationView == nil) {
-      annotationView = [[MAAnnotationView alloc] initWithAnnotation:annotation
-                                                    reuseIdentifier:routePlanningCellIdentifier];
-    }
 
     if ([annotation isKindOfClass:[MarkerAnnotation class]]) {
       UnifiedMarkerOptions *options = ((MarkerAnnotation *) annotation).markerOptions;
@@ -295,45 +295,17 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
             [customAnnotationView setExclusiveTouch:YES];
             return customAnnotationView;
         } else {
-          NSString *imagePath;
-          if (options.icon != nil) {
-            imagePath = [UnifiedAssets getAssetPath:options.icon];
-          } else {
-            imagePath=[UnifiedAssets getDefaultAssetPath:@"images/default_marker.png"];
-          }
-          
-          // 根据图片所在文件夹，获取图片scale
-          CGFloat imageScale = 1.0;
-          NSError *error;
-          NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"/assets/(\\d+)x/" options:NSRegularExpressionCaseInsensitive error:&error];
-          NSArray *matches = [regex matchesInString:imagePath
-                                            options:0
-                                              range:NSMakeRange(0, [imagePath length])];
-          if (matches.count>0 && [matches.firstObject numberOfRanges] >= 2) {
-            NSRange matchRange = [[matches firstObject] rangeAtIndex:1];
-            NSString *matchString = [imagePath substringWithRange:matchRange];
-            imageScale = [matchString floatValue];
-          }
-          
-          // 设置大头针图片
-          NSData* data = [NSData dataWithContentsOfFile:imagePath];
-          UIImage *image = [[UIImage alloc] initWithData:data scale:imageScale];
-          annotationView.image = image;
 
-          // 设置大头针中心点偏移
-          CGFloat scale = [UIScreen mainScreen].scale;
-          CGSize size = CGSizeMake(annotationView.image.size.width / scale, annotationView.image.size.height / scale);
-          CGPoint anchor = CGPointMake(size.width * options.anchorU, size.height * options.anchorV);
-          annotationView.centerOffset = anchor;
-          
-          annotationView.calloutOffset = CGPointMake(options.infoWindowOffsetX, options.infoWindowOffsetY);
-          annotationView.draggable = options.draggable;
-          annotationView.canShowCallout = options.infoWindowEnable;
-          annotationView.enabled = options.enabled;
-          annotationView.highlighted = options.highlighted;
-          annotationView.selected = options.selected;
+          if (annotationView == nil) {
+            annotationView = [[NormalAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:routePlanningCellIdentifier];
+          }
+          return annotationView;
         }
     } else {
+      if (annotationView == nil) {
+        annotationView = [[MAAnnotationView alloc] initWithAnnotation:annotation
+                                                      reuseIdentifier:routePlanningCellIdentifier];
+      }
       if ([[annotation title] isEqualToString:@"起点"]) {
         annotationView.image = [UIImage imageWithContentsOfFile:[UnifiedAssets getDefaultAssetPath:@"images/amap_start.png"]];
       } else if ([[annotation title] isEqualToString:@"终点"]) {
