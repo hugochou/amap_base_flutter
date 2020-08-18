@@ -123,6 +123,12 @@ class AMapView(context: Context,
             override fun onCancel(p0: Any?) {}
         })
         mapView.map.setOnMarkerClickListener {
+            if (selectedMarker != null) {
+                val icon = selectedMarker?.options?.icon
+                if (icon != null) {
+                    selectedMarker?.setIcon(icon)
+                }
+            }
             selectedMarker = it
             val obj = it.`object`
             if (obj != null && obj is Map<*, *> && obj["selectedIcon"] != null) {
