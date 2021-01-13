@@ -295,9 +295,10 @@ static NSString *cameraChangeFinishChannelName = @"me.yohom/camera_change_finish
             [customAnnotationView setExclusiveTouch:YES];
             return customAnnotationView;
         } else {
-
           if (annotationView == nil) {
             annotationView = [[NormalAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:routePlanningCellIdentifier];
+          } else if ([annotationView respondsToSelector:@selector(refresh:)]){
+              [annotationView performSelector:@selector(refresh:) withObject:annotation];
           }
           return annotationView;
         }

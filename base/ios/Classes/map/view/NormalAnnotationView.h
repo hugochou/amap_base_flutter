@@ -6,12 +6,14 @@
 //
 
 #import <MAMapKit/MAMapKit.h>
+#import "MapModels.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NormalAnnotationView : MAAnnotationView
 
 -(instancetype)initWithAnnotation:(id)annotation reuseIdentifier:(NSString *)reuseIdentifier;
+- (void)refresh:(MarkerAnnotation *)annotation;
 @end
 
 NS_ASSUME_NONNULL_END

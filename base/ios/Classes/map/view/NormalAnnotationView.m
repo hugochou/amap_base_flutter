@@ -7,7 +7,6 @@
 
 #import "NormalAnnotationView.h"
 #import "UnifiedAssets.h"
-#import "MapModels.h"
 
 @interface NormalAnnotationView()
 @property (nonatomic, strong) UnifiedMarkerOptions *options;
@@ -29,6 +28,12 @@
 
 - (void)setSelected:(BOOL)selected {
   [self setupImage:selected];
+}
+
+- (void)refresh:(MarkerAnnotation *)annotation {
+    self.annotation = annotation;
+    self.options = annotation.markerOptions;
+    [self setupViews];
 }
 
 -(void)setupViews {
