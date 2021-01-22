@@ -88,6 +88,10 @@
 ///检测是否存在虚拟定位风险，默认为NO，不检测。 \n注意:设置为YES时，单次定位通过 AMapLocatingCompletionBlock 的error给出虚拟定位风险提示；连续定位通过 amapLocationManager:didFailWithError: 方法的error给出虚拟定位风险提示。error格式为 error.domain==AMapLocationErrorDomain; error.code==AMapLocationErrorRiskOfFakeLocation; \n附带的error的详细信息参考 error.localizedDescription 中的描述以及 error.userInfo 中的信息(error.userInfo.AMapLocationRiskyLocateResult 表示有虚拟风险的定位结果; error.userInfo.AMapLocationAccessoryInfo 表示外接辅助设备信息)。
 @property(nonatomic, assign) BOOL detectRiskOfFakeLocation;
 
+/// 申请临时精确定位所需的描述Key [iOS]
+/// 在plist配置NSLocationTemporaryUsageDescriptionDictionary 字典时对应的key值
+@property (nonatomic, copy) NSString *purposeKey;
+
 -(void) applyTo:(AMapLocationManager*) locationManager;
 
 @end

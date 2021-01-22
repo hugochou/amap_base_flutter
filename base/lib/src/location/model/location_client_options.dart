@@ -98,6 +98,10 @@ class LocationClientOptions {
   /// error.userInfo.AMapLocationAccessoryInfo 表示外接辅助设备信息)。
   final bool detectRiskOfFakeLocation;
 
+  /// 申请临时精确定位所需的描述Key [iOS]
+  /// 在plist配置NSLocationTemporaryUsageDescriptionDictionary 字典时对应的key值
+  final String purposeKey;
+
   LocationClientOptions({
     this.isMockEnable = true,
     this.interval = 2000,
@@ -128,6 +132,7 @@ class LocationClientOptions {
     this.locatingWithReGeocode = false,
     this.monitoredRegions,
     this.detectRiskOfFakeLocation = false,
+    this.purposeKey,
   });
 
   Map<String, Object> toJson() {
@@ -160,7 +165,8 @@ class LocationClientOptions {
       'reGeocodeTimeout': reGeocodeTimeout,
       'locatingWithReGeocode': locatingWithReGeocode,
       'monitoredRegions': monitoredRegions,
-      'detectRiskOfFakeLocation': detectRiskOfFakeLocation
+      'detectRiskOfFakeLocation': detectRiskOfFakeLocation,
+      'purposeKey': purposeKey,
     };
   }
 

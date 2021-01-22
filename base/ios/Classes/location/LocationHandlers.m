@@ -15,6 +15,9 @@ static AMapLocationManager *_locationManager;
     self = [super init];
     if (self) {
         _locationManager = [[AMapLocationManager alloc] init];
+        if (@available(iOS 14.0, *)) {
+            _locationManager.locationAccuracyMode = AMapLocationFullAndReduceAccuracy;
+        }
     }
     
     return self;
@@ -32,6 +35,7 @@ static AMapLocationManager *_locationManager;
 
 @interface StartLocate()
 @property (nonatomic, copy) FlutterEventSink sink;
+@property (nonatomic, copy) NSString *purposeKey;
 @end
 
 @implementation StartLocate {
@@ -56,6 +60,8 @@ static AMapLocationManager *_locationManager;
     
     UnifiedLocationClientOptions *options = [UnifiedLocationClientOptions mj_objectWithKeyValues:optionJson];
     _locationManager.delegate = self;
+    
+    self.purposeKey = options.purposeKey;
     [options applyTo:_locationManager];
     
     if (options.isOnceLocation) {
@@ -89,6 +95,18 @@ static AMapLocationManager *_locationManager;
 
 - (void)amapLocationManager:(AMapLocationManager *)manager doRequireLocationAuth:(CLLocationManager *)locationManager {
     [locationManager requestWhenInUseAuthorization];
+}
+
+- (void)amapLocationManager:(AMapLocationManager *)manager doRequireTemporaryFullAccuracyAuth:(CLLocationManager *)locationManager completion:(void (^)(NSError *))completion {
+    if(@available(iOS 14.0,*)){
+        if (_purposeKey) {
+          [locationManager requestTemporaryFullAccuracyAuthorizationWithPurposeKey: self.purposeKey completion:^(NSError* _Nullable error) {
+              if(completion){
+                 completion(error);
+              }
+          }];
+        }
+   }
 }
 
 - (FlutterError *_Nullable)onListenWithArguments:(id _Nullable)arguments eventSink:(FlutterEventSink)events {
