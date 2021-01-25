@@ -36,6 +36,7 @@ static AMapLocationManager *_locationManager;
 @interface StartLocate()
 @property (nonatomic, copy) FlutterEventSink sink;
 @property (nonatomic, copy) NSString *purposeKey;
+@property (nonatomic, strong) AMapLocationManager *onceLocationManager;
 @end
 
 @implementation StartLocate {
@@ -59,14 +60,19 @@ static AMapLocationManager *_locationManager;
     NSLog(@"startLocate ios端: options.toJsonString() -> %@", optionJson);
     
     UnifiedLocationClientOptions *options = [UnifiedLocationClientOptions mj_objectWithKeyValues:optionJson];
-    _locationManager.delegate = self;
     
     self.purposeKey = options.purposeKey;
-    [options applyTo:_locationManager];
     
     if (options.isOnceLocation) {
+        self.onceLocationManager = [[AMapLocationManager alloc] init];
+        if (@available(iOS 14.0, *)) {
+            self.onceLocationManager.locationAccuracyMode = AMapLocationFullAndReduceAccuracy;
+        }
+        self.onceLocationManager.delegate = self;
+        [options applyTo:self.onceLocationManager];
+        
         __weak typeof(self) weakSelf = self;
-        [_locationManager requestLocationWithReGeocode:YES completionBlock:^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
+        [self.onceLocationManager requestLocationWithReGeocode:YES completionBlock:^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
             if (error) {
                 result([FlutterError errorWithCode:[NSString stringWithFormat:@"%ld", error.code]
                                            message:error.localizedDescription
@@ -80,6 +86,8 @@ static AMapLocationManager *_locationManager;
                                                                withError:error] mj_JSONString]);
         }];
     } else {
+        _locationManager.delegate = self;
+        [options applyTo:_locationManager];
         [_locationManager startUpdatingLocation];
     }
 }
