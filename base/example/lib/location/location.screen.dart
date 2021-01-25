@@ -9,8 +9,7 @@ class LocationDemo extends StatefulWidget {
   _LocationDemoState createState() => _LocationDemoState();
 }
 
-class _LocationDemoState extends State<LocationDemo>
-    with AutomaticKeepAliveClientMixin {
+class _LocationDemoState extends State<LocationDemo> with AutomaticKeepAliveClientMixin {
   final _amapLocation = AMapLocation();
 
   List<Location> _result = [];
@@ -34,8 +33,7 @@ class _LocationDemoState extends State<LocationDemo>
         children: <Widget>[
           Flexible(
             child: ListView(
-              children:
-                  _result.map((location) => _ResultItem(location)).toList(),
+              children: _result.map((location) => _ResultItem(location)).toList(),
             ),
           ),
           SPACE_NORMAL,
@@ -48,16 +46,13 @@ class _LocationDemoState extends State<LocationDemo>
                   final options = LocationClientOptions(
                     isOnceLocation: true,
                     locatingWithReGeocode: true,
+                    purposeKey: 'TempLocation',
                   );
 
                   if (await Permissions().requestPermission()) {
-                    _amapLocation
-                        .getLocation(options)
-                        .then(_result.add)
-                        .then((_) => setState(() {}));
+                    _amapLocation.getLocation(options).then(_result.add).then((_) => setState(() {}));
                   } else {
-                    Scaffold.of(context)
-                        .showSnackBar(SnackBar(content: Text('权限不足')));
+                    Scaffold.of(context).showSnackBar(SnackBar(content: Text('权限不足')));
                   }
                 },
               ),
@@ -70,13 +65,9 @@ class _LocationDemoState extends State<LocationDemo>
                   );
 
                   if (await Permissions().requestPermission()) {
-                    _amapLocation
-                        .startLocate(options)
-                        .map(_result.add)
-                        .listen((_) => setState(() {}));
+                    _amapLocation.startLocate(options).map(_result.add).listen((_) => setState(() {}));
                   } else {
-                    Scaffold.of(context)
-                        .showSnackBar(SnackBar(content: Text('权限不足')));
+                    Scaffold.of(context).showSnackBar(SnackBar(content: Text('权限不足')));
                   }
                 },
               ),

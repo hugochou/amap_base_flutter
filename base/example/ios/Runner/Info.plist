@@ -28,6 +28,11 @@
 	<string>导航SDK需要您的定位服务，否则可能无法使用，如果您需要使用后台导航功能请选择“始终允许”。</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>导航SDK需要您的定位服务，否则可能无法使用。</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>TempLocation</key>
+		<string>获取临时精确定位权限</string>
+	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>导航SDK需要您的定位服务，否则可能无法使用。</string>
 	<key>UIBackgroundModes</key>
