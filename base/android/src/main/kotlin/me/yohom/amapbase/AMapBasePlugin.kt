@@ -29,6 +29,8 @@ class AMapBasePlugin {
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
+            if (registrar.activity() == null) return
+
             // 由于registrar用到的地方比较多, 这里直接放到全局变量里去好了
             AMapBasePlugin.registrar = registrar
             registrarActivityHashCode = registrar.activity().hashCode()

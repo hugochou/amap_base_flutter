@@ -3,13 +3,17 @@ import 'package:amap_base_example/utils/misc.dart';
 import 'package:amap_base_example/widgets/button.widget.dart';
 import 'package:amap_base_example/widgets/dimens.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import '../utils/permission.dart';
 
 class LocationDemo extends StatefulWidget {
   @override
   _LocationDemoState createState() => _LocationDemoState();
 }
 
-class _LocationDemoState extends State<LocationDemo> with AutomaticKeepAliveClientMixin {
+class _LocationDemoState extends State<LocationDemo>
+    with AutomaticKeepAliveClientMixin {
   final _amapLocation = AMapLocation();
 
   List<Location> _result = [];
@@ -33,7 +37,8 @@ class _LocationDemoState extends State<LocationDemo> with AutomaticKeepAliveClie
         children: <Widget>[
           Flexible(
             child: ListView(
-              children: _result.map((location) => _ResultItem(location)).toList(),
+              children:
+                  _result.map((location) => _ResultItem(location)).toList(),
             ),
           ),
           SPACE_NORMAL,
@@ -49,10 +54,19 @@ class _LocationDemoState extends State<LocationDemo> with AutomaticKeepAliveClie
                     purposeKey: 'TempLocation',
                   );
 
-                  if (await Permissions().requestPermission()) {
-                    _amapLocation.getLocation(options).then(_result.add).then((_) => setState(() {}));
+                  if ((await [
+                    Permission.location,
+                    Permission.locationAlways,
+                    Permission.locationWhenInUse
+                  ].request())
+                      .isGranted()) {
+                    _amapLocation
+                        .getLocation(options)
+                        .then(_result.add)
+                        .then((_) => setState(() {}));
                   } else {
-                    Scaffold.of(context).showSnackBar(SnackBar(content: Text('权限不足')));
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text('权限不足')));
                   }
                 },
               ),
@@ -64,10 +78,19 @@ class _LocationDemoState extends State<LocationDemo> with AutomaticKeepAliveClie
                     locatingWithReGeocode: true,
                   );
 
-                  if (await Permissions().requestPermission()) {
-                    _amapLocation.startLocate(options).map(_result.add).listen((_) => setState(() {}));
+                  if ((await [
+                    Permission.location,
+                    Permission.locationAlways,
+                    Permission.locationWhenInUse
+                  ].request())
+                      .isGranted()) {
+                    _amapLocation
+                        .startLocate(options)
+                        .map(_result.add)
+                        .listen((_) => setState(() {}));
                   } else {
-                    Scaffold.of(context).showSnackBar(SnackBar(content: Text('权限不足')));
+                    Scaffold.of(context)
+                        .showSnackBar(SnackBar(content: Text('权限不足')));
                   }
                 },
               ),

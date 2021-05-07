@@ -13,19 +13,6 @@ static NSObject <FlutterPluginRegistrar> *_registrar;
     [AMapServices sharedServices].enableHTTPS = YES;
     _registrar = registrar;
 
-    // 设置权限 channel
-    FlutterMethodChannel *permissionChannel = [FlutterMethodChannel
-            methodChannelWithName:@"me.yohom/permission"
-                  binaryMessenger:[registrar messenger]];
-    [permissionChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
-        if ([@"requestPermission" isEqualToString:call.method]) {
-            result(@([StartLocate locationServiceAvailable]));
-        }
-        else {
-            result(@YES);
-        }
-    }];
-
     // 设置key channel
     FlutterMethodChannel *setKeyChannel = [FlutterMethodChannel
             methodChannelWithName:@"me.yohom/amap_base"

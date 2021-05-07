@@ -2,6 +2,9 @@ import 'package:amap_base/amap_base.dart';
 import 'package:amap_base_example/utils/utils.export.dart';
 import 'package:amap_base_example/widgets/setting.widget.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import '../../utils/permission.dart';
 
 class ShowMapScreen extends StatefulWidget {
   ShowMapScreen();
@@ -209,7 +212,12 @@ class _ShowMapScreenState extends State<ShowMapScreen> {
     bool enablePulseAnnimation,
     String image,
   }) async {
-    if (await Permissions().requestPermission()) {
+    if ((await [
+      Permission.location,
+      Permission.locationAlways,
+      Permission.locationWhenInUse
+    ].request())
+        .isGranted()) {
       _myLocationStyle = _myLocationStyle.copyWith(
         myLocationIcon: myLocationIcon,
         anchorU: anchorU,
